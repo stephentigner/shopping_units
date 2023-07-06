@@ -5,6 +5,6 @@ class ApplicationStrings {
   static const packagePriceHintText = "Price";
   static const packageUnitsAmountHintText = "Amount per package";
 
-  static const numberOfItemsHintText = "Number of Items";
+  static const itemCountHintText = "Number of Items";
   static const amountPerItemHintText = "Amount per item";
 }

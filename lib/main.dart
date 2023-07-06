@@ -1,4 +1,8 @@
+import 'dart:collection';
+
 import 'package:flutter/material.dart';
+import 'package:shopping_units/enums/comparison_item_field.dart';
+import 'package:shopping_units/enums/unit_type.dart';
 import 'package:shopping_units/models/item_details.dart';
 import 'package:shopping_units/widgets/comparison_item.dart';
 
@@ -50,15 +54,108 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  final List<ItemDetails> _comparisonItems = [
-    ItemDetails(),
-    ItemDetails(),
-  ];
+  final LinkedHashMap<UniqueKey, ItemDetails> _comparisonItems =
+      LinkedHashMap<UniqueKey, ItemDetails>();
+
+  _MyHomePageState() {
+    _addComparisonItem();
+    _addComparisonItem();
+  }
 
   void _addComparisonItem() {
+    ItemDetails newItem = ItemDetails();
+    _comparisonItems[newItem.key] = newItem;
+  }
+
+  void _addComparisonItemToState() {
     setState(() {
-      _comparisonItems.add(ItemDetails());
+      _addComparisonItem();
     });
+  }
+
+  void _changeUnitDropdown(
+    ItemDetails item,
+    ComparisonItemField dropdown,
+    UnitType? newValue,
+  ) {
+    UnitType nullSafeNewValue = newValue ?? UnitType.values.first;
+    setState(() {
+      switch (dropdown) {
+        case ComparisonItemField.packageUnits:
+          item.packageUnits = nullSafeNewValue;
+          break;
+        case ComparisonItemField.itemUnits:
+          item.itemUnits = nullSafeNewValue;
+          break;
+        default:
+        //if unmatched, do nothing for now
+      }
+    });
+  }
+
+  void _changeTextField(
+    ItemDetails item,
+    ComparisonItemField field,
+    String newValue,
+  ) {
+    //pre-process values when applicable to reduce duplicate code
+    double? parsedDouble;
+    int? parsedInt;
+    bool validDouble = false;
+    bool validInt = false;
+
+    switch (field) {
+      case ComparisonItemField.packagePrice:
+      case ComparisonItemField.packageUnitsAmount:
+      case ComparisonItemField.itemUnitsAmount:
+        parsedDouble = double.tryParse(newValue);
+        validDouble = parsedDouble != null && parsedDouble >= 0;
+        break;
+      case ComparisonItemField.itemCount:
+        parsedInt = int.tryParse(newValue);
+        validInt = parsedInt != null && parsedInt >= 0;
+        break;
+      default:
+      //if unmatched, do nothing for now
+    }
+
+    //Not using setState for every case here because we don't need to re-render
+    //the text fields when their value changes, as that just interferes with
+    //text entry
+    switch (field) {
+      case ComparisonItemField.name:
+        item.name = newValue;
+        break;
+      case ComparisonItemField.packagePrice:
+        //Only update the model if the parsedPrice is a valid price
+        //A valid price is parseable and is greater than or equal to 0
+        //We just leave it as the previous value instead of trying to reset
+        //it to 0 because the latter causes UX issues with being unable to
+        //delete the 0 before typing a new value, and we are already filtering
+        //on the input side to hopefully eliminate most invalid values before
+        //they even get to this point
+        if (validDouble) {
+          item.packagePrice = parsedDouble!;
+        }
+        break;
+      case ComparisonItemField.packageUnitsAmount:
+        if (validDouble) {
+          item.packageUnitsAmount = parsedDouble!;
+        }
+        break;
+      case ComparisonItemField.itemCount:
+        if (validInt) {
+          item.itemCount = parsedInt!;
+        }
+        break;
+      case ComparisonItemField.itemUnitsAmount:
+        if (validDouble) {
+          item.itemUnitsAmount = parsedDouble!;
+        }
+        break;
+      default:
+      //if unmatched, do nothing for now
+    }
   }
 
   @override
@@ -78,33 +175,19 @@ class _MyHomePageState extends State<MyHomePage> {
       body: Center(
         // Center is a layout widget. It takes a single child and positions it
         // in the middle of the parent.
-        child: Column(
-            // Column is also a layout widget. It takes a list of children and
-            // arranges them vertically. By default, it sizes itself to fit its
-            // children horizontally, and tries to be as tall as its parent.
-            //
-            // Invoke "debug painting" (press "p" in the console, choose the
-            // "Toggle Debug Paint" action from the Flutter Inspector in Android
-            // Studio, or the "Toggle Debug Paint" command in Visual Studio Code)
-            // to see the wireframe for each widget.
-            //
-            // Column has various properties to control how it sizes itself and
-            // how it positions its children. Here we use mainAxisAlignment to
-            // center the children vertically; the main axis here is the vertical
-            // axis because Columns are vertical (the cross axis would be
-            // horizontal).
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              ListView(
-                shrinkWrap: true,
-                children: _comparisonItems
-                    .map((e) => ComparisonItem(details: e))
-                    .toList(),
-              ),
-            ]),
+        child: ListView(
+          shrinkWrap: false,
+          children: _comparisonItems.values
+              .map((e) => ComparisonItem(
+                    details: e,
+                    onChangedUnitDropdown: _changeUnitDropdown,
+                    onChangedTextField: _changeTextField,
+                  ))
+              .toList(),
+        ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _addComparisonItem,
+        onPressed: _addComparisonItemToState,
         tooltip: 'Add new item',
         child: const Icon(Icons.add),
       ), // This trailing comma makes auto-formatting nicer for build methods.

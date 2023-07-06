@@ -1,6 +1,8 @@
+import 'package:flutter/material.dart';
 import 'package:shopping_units/enums/unit_type.dart';
 
 class ItemDetails {
+  UniqueKey key = UniqueKey();
   String name = "";
   double packagePrice = 0.0;
   double packageUnitsAmount = 0.0;
