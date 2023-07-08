@@ -1,10 +1,7 @@
 class ApplicationStrings {
   //ComparisonItem widget
-  static const itemNameHintText = "Item name";
+  static const itemNameLabel = "Item name";
 
-  static const packagePriceHintText = "Price";
-  static const packageUnitsAmountHintText = "Amount per package";
-
-  static const itemCountHintText = "Number of Items";
-  static const amountPerItemHintText = "Amount per item";
+  static const packagePriceLabel = "Price";
+  static const packageUnitsAmountLabel = "Amount";
 }

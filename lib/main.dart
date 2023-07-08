@@ -17,7 +17,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'Price comparison',
       theme: ThemeData(
         // This is the theme of your application.
         //
@@ -30,7 +30,7 @@ class MyApp extends StatelessWidget {
         // is not restarted.
         primarySwatch: Colors.blue,
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: const MyHomePage(title: 'Price Comparison'),
     );
   }
 }
@@ -56,11 +56,7 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   final LinkedHashMap<UniqueKey, ItemDetails> _comparisonItems =
       LinkedHashMap<UniqueKey, ItemDetails>();
-
-  _MyHomePageState() {
-    _addComparisonItem();
-    _addComparisonItem();
-  }
+  final _isFluidMeasure = false;
 
   void _addComparisonItem() {
     ItemDetails newItem = ItemDetails();
@@ -78,14 +74,12 @@ class _MyHomePageState extends State<MyHomePage> {
     ComparisonItemField dropdown,
     UnitType? newValue,
   ) {
-    UnitType nullSafeNewValue = newValue ?? UnitType.values.first;
+    UnitType nullSafeNewValue =
+        newValue ?? UnitType.defaultUnit(_isFluidMeasure);
     setState(() {
       switch (dropdown) {
         case ComparisonItemField.packageUnits:
           item.packageUnits = nullSafeNewValue;
-          break;
-        case ComparisonItemField.itemUnits:
-          item.itemUnits = nullSafeNewValue;
           break;
         default:
         //if unmatched, do nothing for now
@@ -100,62 +94,46 @@ class _MyHomePageState extends State<MyHomePage> {
   ) {
     //pre-process values when applicable to reduce duplicate code
     double? parsedDouble;
-    int? parsedInt;
     bool validDouble = false;
-    bool validInt = false;
 
     switch (field) {
       case ComparisonItemField.packagePrice:
       case ComparisonItemField.packageUnitsAmount:
-      case ComparisonItemField.itemUnitsAmount:
         parsedDouble = double.tryParse(newValue);
         validDouble = parsedDouble != null && parsedDouble >= 0;
         break;
-      case ComparisonItemField.itemCount:
-        parsedInt = int.tryParse(newValue);
-        validInt = parsedInt != null && parsedInt >= 0;
-        break;
       default:
       //if unmatched, do nothing for now
     }
 
-    //Not using setState for every case here because we don't need to re-render
-    //the text fields when their value changes, as that just interferes with
-    //text entry
-    switch (field) {
-      case ComparisonItemField.name:
-        item.name = newValue;
-        break;
-      case ComparisonItemField.packagePrice:
-        //Only update the model if the parsedPrice is a valid price
-        //A valid price is parseable and is greater than or equal to 0
-        //We just leave it as the previous value instead of trying to reset
-        //it to 0 because the latter causes UX issues with being unable to
-        //delete the 0 before typing a new value, and we are already filtering
-        //on the input side to hopefully eliminate most invalid values before
-        //they even get to this point
-        if (validDouble) {
-          item.packagePrice = parsedDouble!;
-        }
-        break;
-      case ComparisonItemField.packageUnitsAmount:
-        if (validDouble) {
-          item.packageUnitsAmount = parsedDouble!;
-        }
-        break;
-      case ComparisonItemField.itemCount:
-        if (validInt) {
-          item.itemCount = parsedInt!;
-        }
-        break;
-      case ComparisonItemField.itemUnitsAmount:
-        if (validDouble) {
-          item.itemUnitsAmount = parsedDouble!;
-        }
-        break;
-      default:
-      //if unmatched, do nothing for now
-    }
+    setState(() {
+      switch (field) {
+        case ComparisonItemField.name:
+          item.name = newValue;
+          break;
+        case ComparisonItemField.packagePrice:
+          //Only update the model if the parsedPrice is a valid price
+          //A valid price is parseable and is greater than or equal to 0
+          if (validDouble) {
+            item.packagePrice = parsedDouble!;
+          }
+          break;
+        case ComparisonItemField.packageUnitsAmount:
+          if (validDouble) {
+            item.packageUnitsAmount = parsedDouble!;
+          }
+          break;
+        default:
+        //if unmatched, do nothing for now
+      }
+    });
+  }
+
+  @override
+  void initState() {
+    _addComparisonItem();
+    _addComparisonItem();
+    super.initState();
   }
 
   @override
@@ -181,7 +159,7 @@ class _MyHomePageState extends State<MyHomePage> {
               .map((e) => ComparisonItem(
                     details: e,
                     onChangedUnitDropdown: _changeUnitDropdown,
-                    onChangedTextField: _changeTextField,
+                    onBlurTextField: _changeTextField,
                   ))
               .toList(),
         ),

@@ -9,22 +9,19 @@ class ComparisonItem extends StatelessWidget {
   final ItemDetails details;
   final void Function(ItemDetails, ComparisonItemField, UnitType?)
       onChangedUnitDropdown;
-  final void Function(ItemDetails, ComparisonItemField, String)
-      onChangedTextField;
+  final void Function(ItemDetails, ComparisonItemField, String) onBlurTextField;
 
   ComparisonItem(
       {Key? key,
       required this.details,
       required this.onChangedUnitDropdown,
-      required this.onChangedTextField})
+      required this.onBlurTextField})
       : super(key: key);
 
   //TextEditingControllers
   final _itemNameController = TextEditingController();
   final _packagePriceController = TextEditingController();
   final _packageUnitsAmountController = TextEditingController();
-  final _itemCountController = TextEditingController();
-  final _amountPerItemController = TextEditingController();
 
   //At the time of this writing (2023-07-03), the FilteringTextInputFormatter
   //documentation mentions that it "typically shouldn't be used with RegExps
@@ -36,14 +33,11 @@ class ComparisonItem extends StatelessWidget {
       FilteringTextInputFormatter.allow(RegExp(r"^\d*\.?\d{0,2}"));
   final _unitsFormatter =
       FilteringTextInputFormatter.allow(RegExp(r"^\d*\.?\d*"));
-  final _integerFormatter = FilteringTextInputFormatter.digitsOnly;
 
   void _initControllers() {
     _itemNameController.text = details.name;
     _packagePriceController.text = details.packagePrice.toString();
     _packageUnitsAmountController.text = details.packageUnitsAmount.toString();
-    _itemCountController.text = details.itemCount.toString();
-    _amountPerItemController.text = details.itemUnitsAmount.toString();
   }
 
   @override
@@ -62,45 +56,63 @@ class ComparisonItem extends StatelessWidget {
                   keyboardType: TextInputType.text,
                   controller: _itemNameController,
                   decoration: const InputDecoration(
-                    hintText: ApplicationStrings.itemNameHintText,
+                    labelText: ApplicationStrings.itemNameLabel,
                   ),
-                  onChanged: (value) => onChangedTextField(
-                      details, ComparisonItemField.name, value),
+                  onChanged: (value) =>
+                      onBlurTextField(details, ComparisonItemField.name, value),
                 ),
               ),
             ),
           ],
         ),
-        Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
+        Row(children: [
           Expanded(
             child: Padding(
               padding: const EdgeInsets.all(8.0),
-              child: TextField(
-                keyboardType: const TextInputType.numberWithOptions(
-                    signed: false, decimal: true),
-                controller: _packagePriceController,
-                decoration: const InputDecoration(
-                  hintText: ApplicationStrings.packagePriceHintText,
+              child: Focus(
+                child: TextField(
+                  keyboardType: const TextInputType.numberWithOptions(
+                      signed: false, decimal: true),
+                  controller: _packagePriceController,
+                  decoration: const InputDecoration(
+                    labelText: ApplicationStrings.packagePriceLabel,
+                    prefixIcon: Text(
+                      "\$",
+                      textScaleFactor: 2,
+                    ),
+                  ),
+                  inputFormatters: [_currencyFormatter],
                 ),
-                inputFormatters: [_currencyFormatter],
-                onChanged: (value) => onChangedTextField(
-                    details, ComparisonItemField.packagePrice, value),
+                onFocusChange: (hasFocus) {
+                  if (!hasFocus) {
+                    onBlurTextField(details, ComparisonItemField.packagePrice,
+                        _packagePriceController.text);
+                  }
+                },
               ),
             ),
           ),
           Expanded(
             child: Padding(
               padding: const EdgeInsets.all(8.0),
-              child: TextField(
-                keyboardType: const TextInputType.numberWithOptions(
-                    signed: false, decimal: true),
-                controller: _packageUnitsAmountController,
-                decoration: const InputDecoration(
-                  hintText: ApplicationStrings.packageUnitsAmountHintText,
+              child: Focus(
+                child: TextField(
+                  keyboardType: const TextInputType.numberWithOptions(
+                      signed: false, decimal: true),
+                  controller: _packageUnitsAmountController,
+                  decoration: const InputDecoration(
+                    labelText: ApplicationStrings.packageUnitsAmountLabel,
+                  ),
+                  inputFormatters: [_unitsFormatter],
                 ),
-                inputFormatters: [_unitsFormatter],
-                onChanged: (value) => onChangedTextField(
-                    details, ComparisonItemField.packageUnitsAmount, value),
+                onFocusChange: (hasFocus) {
+                  if (!hasFocus) {
+                    onBlurTextField(
+                        details,
+                        ComparisonItemField.packageUnitsAmount,
+                        _packageUnitsAmountController.text);
+                  }
+                },
               ),
             ),
           ),
@@ -110,7 +122,7 @@ class ComparisonItem extends StatelessWidget {
               child: DropdownButtonHideUnderline(
                 child: DropdownButton<UnitType>(
                   value: details.packageUnits,
-                  items: UnitType.values
+                  items: UnitType.filteredValues(details.isFluidMeasure)
                       .map((e) => DropdownMenuItem<UnitType>(
                             value: e,
                             child: Text(e.abbreviation),
@@ -125,71 +137,13 @@ class ComparisonItem extends StatelessWidget {
             ),
           ),
         ]),
-        if (details.packageUnits == UnitType.each)
-          Row(
-            children: [
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: TextField(
-                    keyboardType: const TextInputType.numberWithOptions(
-                        signed: false, decimal: false),
-                    controller: _itemCountController,
-                    decoration: const InputDecoration(
-                      hintText: ApplicationStrings.itemCountHintText,
-                    ),
-                    inputFormatters: [_integerFormatter],
-                    onChanged: (value) => onChangedTextField(
-                        details, ComparisonItemField.itemCount, value),
-                  ),
-                ),
-              ),
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: TextField(
-                    keyboardType: const TextInputType.numberWithOptions(
-                        signed: false, decimal: true),
-                    controller: _amountPerItemController,
-                    decoration: const InputDecoration(
-                      hintText: ApplicationStrings.amountPerItemHintText,
-                    ),
-                    inputFormatters: [_unitsFormatter],
-                    onChanged: (value) => onChangedTextField(
-                        details, ComparisonItemField.itemUnitsAmount, value),
-                  ),
-                ),
-              ),
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: DropdownButtonHideUnderline(
-                    child: DropdownButton<UnitType>(
-                      value: details.itemUnits,
-                      items: UnitType.values
-                          .map((e) => DropdownMenuItem<UnitType>(
-                                value: e,
-                                child: Text(e.abbreviation),
-                              ))
-                          .toList(),
-                      onChanged: (value) => {
-                        onChangedUnitDropdown(
-                            details, ComparisonItemField.itemUnits, value)
-                      },
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
         if (details.standardizedPrice > 0)
           Row(
             children: [
               Expanded(
                 child: Padding(
                   padding: const EdgeInsets.all(8.0),
-                  child: Text(
-                      "${details.standardizedPrice.toStringAsFixed(2)}/${details.standardizedUnits.abbreviation}"),
+                  child: Text(details.standardizedPriceDisplay),
                 ),
               ),
             ],
