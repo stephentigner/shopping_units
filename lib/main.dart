@@ -5,6 +5,7 @@ import 'package:shopping_units/enums/comparison_item_field.dart';
 import 'package:shopping_units/enums/unit_type.dart';
 import 'package:shopping_units/models/item_details.dart';
 import 'package:shopping_units/widgets/comparison_item.dart';
+import 'package:toggle_switch/toggle_switch.dart';
 
 void main() {
   runApp(const MyApp());
@@ -56,10 +57,12 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   final LinkedHashMap<UniqueKey, ItemDetails> _comparisonItems =
       LinkedHashMap<UniqueKey, ItemDetails>();
-  final _isFluidMeasure = false;
+  bool _isFluidMeasure = false;
+  int _measureTypeIndex = 0;
 
   void _addComparisonItem() {
     ItemDetails newItem = ItemDetails();
+    newItem.isFluidMeasure = _isFluidMeasure;
     _comparisonItems[newItem.key] = newItem;
   }
 
@@ -129,6 +132,28 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
+  void _toggleMeasureType(int? measureTypeIndex) {
+    setState(() {
+      _measureTypeIndex = measureTypeIndex ?? 0;
+      switch (measureTypeIndex) {
+        case 0:
+          _isFluidMeasure = false;
+          for (var element in _comparisonItems.values) {
+            element.isFluidMeasure = false;
+          }
+          break;
+        case 1:
+          _isFluidMeasure = true;
+          for (var element in _comparisonItems.values) {
+            element.isFluidMeasure = true;
+          }
+          break;
+        default:
+        //if unmatched, do nothing for now
+      }
+    });
+  }
+
   @override
   void initState() {
     _addComparisonItem();
@@ -138,21 +163,11 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
     return Scaffold(
       appBar: AppBar(
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
         title: Text(widget.title),
       ),
       body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
         child: ListView(
           shrinkWrap: false,
           children: _comparisonItems.values
@@ -164,11 +179,23 @@ class _MyHomePageState extends State<MyHomePage> {
               .toList(),
         ),
       ),
+      persistentFooterButtons: [
+        Row(
+          children: [
+            ToggleSwitch(
+              totalSwitches: 2,
+              labels: ['Solid', 'Liquid'],
+              initialLabelIndex: _measureTypeIndex,
+              onToggle: _toggleMeasureType,
+            ),
+          ],
+        )
+      ],
       floatingActionButton: FloatingActionButton(
         onPressed: _addComparisonItemToState,
         tooltip: 'Add new item',
         child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
+      ),
     );
   }
 }
