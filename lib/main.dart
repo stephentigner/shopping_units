@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:shopping_units/enums/comparison_item_field.dart';
 import 'package:shopping_units/enums/unit_type.dart';
 import 'package:shopping_units/models/item_details.dart';
+import 'package:shopping_units/utils/application_strings.dart';
 import 'package:shopping_units/widgets/comparison_item.dart';
 import 'package:toggle_switch/toggle_switch.dart';
 
@@ -59,6 +60,7 @@ class _MyHomePageState extends State<MyHomePage> {
       LinkedHashMap<UniqueKey, ItemDetails>();
   bool _isFluidMeasure = false;
   int _measureTypeIndex = 0;
+  UnitType _standardizedUnits = UnitType.defaultSolidUnit;
 
   void _addComparisonItem() {
     ItemDetails newItem = ItemDetails();
@@ -138,19 +140,18 @@ class _MyHomePageState extends State<MyHomePage> {
       switch (measureTypeIndex) {
         case 0:
           _isFluidMeasure = false;
-          for (var element in _comparisonItems.values) {
-            element.isFluidMeasure = false;
-          }
           break;
         case 1:
           _isFluidMeasure = true;
-          for (var element in _comparisonItems.values) {
-            element.isFluidMeasure = true;
-          }
           break;
         default:
         //if unmatched, do nothing for now
       }
+
+      for (var element in _comparisonItems.values) {
+        element.isFluidMeasure = _isFluidMeasure;
+      }
+      _standardizedUnits = UnitType.defaultUnit(_isFluidMeasure);
     });
   }
 
@@ -188,6 +189,29 @@ class _MyHomePageState extends State<MyHomePage> {
               initialLabelIndex: _measureTypeIndex,
               onToggle: _toggleMeasureType,
             ),
+            const Padding(
+              padding: EdgeInsets.all(8.0),
+              child: Text(ApplicationStrings.standardizedUnitsLabel),
+            ),
+            DropdownButton<UnitType>(
+              value: _standardizedUnits,
+              items: UnitType.filteredValues(_isFluidMeasure)
+                  .map((e) => DropdownMenuItem<UnitType>(
+                        value: e,
+                        child: Text(e.abbreviation),
+                      ))
+                  .toList(),
+              onChanged: (value) {
+                setState(() {
+                  UnitType nullCheckedValue =
+                      value ?? UnitType.defaultUnit(_isFluidMeasure);
+                  _standardizedUnits = nullCheckedValue;
+                  for (var element in _comparisonItems.values) {
+                    element.standardizedUnits = nullCheckedValue;
+                  }
+                });
+              },
+            )
           ],
         )
       ],

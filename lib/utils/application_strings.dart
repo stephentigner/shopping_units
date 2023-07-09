@@ -4,4 +4,6 @@ class ApplicationStrings {
 
   static const packagePriceLabel = "Price";
   static const packageUnitsAmountLabel = "Amount";
+
+  static const standardizedUnitsLabel = "Compare all items using:";
 }
