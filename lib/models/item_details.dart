@@ -13,23 +13,26 @@ class ItemDetails {
   Timer? deletionNoticeTimer;
 
   String name = "";
-  double packagePrice = 0.0;
-  double packageUnitsAmount = 0.0;
+  double? packagePrice;
+  double? packageUnitsAmount;
   UnitType packageUnits = UnitType.defaultSolidUnit;
   UnitType standardizedUnits = UnitType.defaultSolidUnit;
 
   double get standardizedPrice {
     double? convertedAmount;
 
-    if (packageUnits != standardizedUnits) {
+    if (packageUnits != standardizedUnits && packageUnitsAmount != null) {
       convertedAmount = UnitConversions.convert(
-          packageUnits, standardizedUnits, packageUnitsAmount);
+          packageUnits, standardizedUnits, packageUnitsAmount!);
     } else {
       convertedAmount = packageUnitsAmount;
     }
 
-    return packagePrice > 0 && convertedAmount != null && convertedAmount > 0
-        ? packagePrice / convertedAmount
+    return packagePrice != null &&
+            packagePrice! > 0 &&
+            convertedAmount != null &&
+            convertedAmount > 0
+        ? packagePrice! / convertedAmount
         : 0;
   }
 

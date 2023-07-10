@@ -40,8 +40,12 @@ class ComparisonItem extends StatelessWidget {
 
   void _initControllers() {
     _itemNameController.text = details.name;
-    _packagePriceController.text = details.packagePrice.toStringAsFixed(2);
-    _packageUnitsAmountController.text = details.packageUnitsAmount.toString();
+    _packagePriceController.text = details.packagePrice != null
+        ? details.packagePrice!.toStringAsFixed(2)
+        : "";
+    _packageUnitsAmountController.text = details.packageUnitsAmount != null
+        ? details.packageUnitsAmount.toString()
+        : "";
   }
 
   @override
