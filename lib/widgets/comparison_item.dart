@@ -10,12 +10,16 @@ class ComparisonItem extends StatelessWidget {
   final void Function(ItemDetails, ComparisonItemField, UnitType?)
       onChangedUnitDropdown;
   final void Function(ItemDetails, ComparisonItemField, String) onBlurTextField;
+  final void Function(ItemDetails) onDeleteItem;
+  final void Function(ItemDetails) onRestoreItem;
 
   ComparisonItem(
       {Key? key,
       required this.details,
       required this.onChangedUnitDropdown,
-      required this.onBlurTextField})
+      required this.onBlurTextField,
+      required this.onDeleteItem,
+      required this.onRestoreItem})
       : super(key: key);
 
   //TextEditingControllers
@@ -44,111 +48,142 @@ class ComparisonItem extends StatelessWidget {
   Widget build(BuildContext context) {
     _initControllers();
 
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: TextField(
-                  keyboardType: TextInputType.text,
-                  controller: _itemNameController,
-                  decoration: const InputDecoration(
-                    labelText: ApplicationStrings.itemNameLabel,
+    if (details.isDeleted) {
+      return Column(
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Padding(
+                padding: EdgeInsets.all(8.0),
+                child: Expanded(
+                  child: Text(
+                    ApplicationStrings.deletedItemLabel,
+                    textScaleFactor: 1.5,
                   ),
-                  onChanged: (value) =>
-                      onBlurTextField(details, ComparisonItemField.name, value),
                 ),
               ),
-            ),
-          ],
-        ),
-        Row(children: [
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Focus(
-                child: TextField(
-                  keyboardType: const TextInputType.numberWithOptions(
-                      signed: false, decimal: true),
-                  controller: _packagePriceController,
-                  decoration: const InputDecoration(
-                    labelText: ApplicationStrings.packagePriceLabel,
-                    prefixIcon: Text(
-                      "\$",
-                      textScaleFactor: 2,
-                    ),
-                  ),
-                  inputFormatters: [_currencyFormatter],
-                ),
-                onFocusChange: (hasFocus) {
-                  if (!hasFocus) {
-                    onBlurTextField(details, ComparisonItemField.packagePrice,
-                        _packagePriceController.text);
-                  }
-                },
-              ),
-            ),
-          ),
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Focus(
-                child: TextField(
-                  keyboardType: const TextInputType.numberWithOptions(
-                      signed: false, decimal: true),
-                  controller: _packageUnitsAmountController,
-                  decoration: const InputDecoration(
-                    labelText: ApplicationStrings.packageUnitsAmountLabel,
-                  ),
-                  inputFormatters: [_unitsFormatter],
-                ),
-                onFocusChange: (hasFocus) {
-                  if (!hasFocus) {
-                    onBlurTextField(
-                        details,
-                        ComparisonItemField.packageUnitsAmount,
-                        _packageUnitsAmountController.text);
-                  }
-                },
-              ),
-            ),
-          ),
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: DropdownButtonHideUnderline(
-                child: DropdownButton<UnitType>(
-                  value: details.packageUnits,
-                  items: UnitType.filteredValues(details.isFluidMeasure)
-                      .map((e) => DropdownMenuItem<UnitType>(
-                            value: e,
-                            child: Text(e.abbreviation),
-                          ))
-                      .toList(),
-                  onChanged: (value) => {
-                    onChangedUnitDropdown(
-                        details, ComparisonItemField.packageUnits, value)
-                  },
-                ),
-              ),
-            ),
-          ),
-        ]),
-        if (details.standardizedPrice > 0)
+              TextButton(
+                  onPressed: () => onRestoreItem(details),
+                  child: Text(
+                    "${ApplicationStrings.restoreItemLabel} (${details.deletionNoticeTimeRemaining})",
+                    textScaleFactor: 1.5,
+                  ))
+            ],
+          )
+        ],
+      );
+    } else {
+      return Column(
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: [
           Row(
             children: [
               Expanded(
                 child: Padding(
                   padding: const EdgeInsets.all(8.0),
-                  child: Text(details.standardizedPriceDisplay),
+                  child: TextField(
+                    keyboardType: TextInputType.text,
+                    controller: _itemNameController,
+                    decoration: const InputDecoration(
+                      labelText: ApplicationStrings.itemNameLabel,
+                    ),
+                    onChanged: (value) => onBlurTextField(
+                        details, ComparisonItemField.name, value),
+                  ),
                 ),
               ),
+              IconButton(
+                  onPressed: () => onDeleteItem(details),
+                  icon: const Icon(Icons.delete))
             ],
           ),
-      ],
-    );
+          Row(children: [
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Focus(
+                  child: TextField(
+                    keyboardType: const TextInputType.numberWithOptions(
+                        signed: false, decimal: true),
+                    controller: _packagePriceController,
+                    decoration: const InputDecoration(
+                      labelText: ApplicationStrings.packagePriceLabel,
+                      prefixIcon: Text(
+                        "\$",
+                        textScaleFactor: 2,
+                      ),
+                    ),
+                    inputFormatters: [_currencyFormatter],
+                  ),
+                  onFocusChange: (hasFocus) {
+                    if (!hasFocus) {
+                      onBlurTextField(details, ComparisonItemField.packagePrice,
+                          _packagePriceController.text);
+                    }
+                  },
+                ),
+              ),
+            ),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Focus(
+                  child: TextField(
+                    keyboardType: const TextInputType.numberWithOptions(
+                        signed: false, decimal: true),
+                    controller: _packageUnitsAmountController,
+                    decoration: const InputDecoration(
+                      labelText: ApplicationStrings.packageUnitsAmountLabel,
+                    ),
+                    inputFormatters: [_unitsFormatter],
+                  ),
+                  onFocusChange: (hasFocus) {
+                    if (!hasFocus) {
+                      onBlurTextField(
+                          details,
+                          ComparisonItemField.packageUnitsAmount,
+                          _packageUnitsAmountController.text);
+                    }
+                  },
+                ),
+              ),
+            ),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: DropdownButtonHideUnderline(
+                  child: DropdownButton<UnitType>(
+                    value: details.packageUnits,
+                    items: UnitType.filteredValues(details.isFluidMeasure)
+                        .map((e) => DropdownMenuItem<UnitType>(
+                              value: e,
+                              child: Text(e.abbreviation),
+                            ))
+                        .toList(),
+                    onChanged: (value) => {
+                      onChangedUnitDropdown(
+                          details, ComparisonItemField.packageUnits, value)
+                    },
+                  ),
+                ),
+              ),
+            ),
+          ]),
+          if (details.standardizedPrice > 0)
+            Row(
+              children: [
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Text(details.standardizedPriceDisplay),
+                  ),
+                ),
+              ],
+            ),
+        ],
+      );
+    }
   }
 }

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:shopping_units/enums/unit_type.dart';
 import 'package:shopping_units/utils/unit_conversions.dart';
@@ -6,6 +8,10 @@ class ItemDetails {
   bool _isFluidMeasure = false;
 
   UniqueKey key = UniqueKey();
+  bool isDeleted = false;
+  int deletionNoticeTimeRemaining = 0;
+  Timer? deletionNoticeTimer;
+
   String name = "";
   double packagePrice = 0.0;
   double packageUnitsAmount = 0.0;

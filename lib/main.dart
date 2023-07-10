@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:collection';
 
 import 'package:flutter/material.dart';
@@ -9,11 +10,11 @@ import 'package:shopping_units/widgets/comparison_item.dart';
 import 'package:toggle_switch/toggle_switch.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(const ShoppingUnits());
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class ShoppingUnits extends StatelessWidget {
+  const ShoppingUnits({super.key});
 
   // This widget is the root of your application.
   @override
@@ -32,13 +33,13 @@ class MyApp extends StatelessWidget {
         // is not restarted.
         primarySwatch: Colors.blue,
       ),
-      home: const MyHomePage(title: 'Price Comparison'),
+      home: const MainScreen(title: 'Price Comparison'),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
+class MainScreen extends StatefulWidget {
+  const MainScreen({super.key, required this.title});
 
   // This widget is the home page of your application. It is stateful, meaning
   // that it has a State object (defined below) that contains fields that affect
@@ -52,10 +53,12 @@ class MyHomePage extends StatefulWidget {
   final String title;
 
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  State<MainScreen> createState() => _MainScreenState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
+class _MainScreenState extends State<MainScreen> {
+  static const int _deletionNoticeTimeoutInSeconds = 30;
+
   final LinkedHashMap<UniqueKey, ItemDetails> _comparisonItems =
       LinkedHashMap<UniqueKey, ItemDetails>();
   bool _isFluidMeasure = false;
@@ -155,6 +158,38 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
+  void _deleteItem(ItemDetails item) {
+    setState(() {
+      item.isDeleted = true;
+      if (_comparisonItems.values.where((item) => !item.isDeleted).length < 2) {
+        _addComparisonItem();
+      }
+      item.deletionNoticeTimeRemaining = _deletionNoticeTimeoutInSeconds;
+      //If there is an existing timer for this item, cancel it
+      item.deletionNoticeTimer?.cancel();
+      item.deletionNoticeTimer =
+          Timer.periodic(const Duration(seconds: 1), (timer) {
+        setState(() {
+          item.deletionNoticeTimeRemaining--;
+          if (item.deletionNoticeTimeRemaining <= 0) {
+            timer.cancel();
+            if (item.isDeleted) {
+              _comparisonItems.remove(item.key);
+            }
+          }
+        });
+      });
+    });
+  }
+
+  void _restoreItem(ItemDetails item) {
+    setState(() {
+      item.isDeleted = false;
+      item.deletionNoticeTimer?.cancel();
+      item.deletionNoticeTimeRemaining = 0;
+    });
+  }
+
   @override
   void initState() {
     _addComparisonItem();
@@ -176,6 +211,8 @@ class _MyHomePageState extends State<MyHomePage> {
                     details: e,
                     onChangedUnitDropdown: _changeUnitDropdown,
                     onBlurTextField: _changeTextField,
+                    onDeleteItem: _deleteItem,
+                    onRestoreItem: _restoreItem,
                   ))
               .toList(),
         ),
@@ -185,7 +222,7 @@ class _MyHomePageState extends State<MyHomePage> {
           children: [
             ToggleSwitch(
               totalSwitches: 2,
-              labels: ['Solid', 'Liquid'],
+              labels: const ['Solid', 'Liquid'],
               initialLabelIndex: _measureTypeIndex,
               onToggle: _toggleMeasureType,
             ),

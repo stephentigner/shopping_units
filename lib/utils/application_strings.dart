@@ -6,4 +6,7 @@ class ApplicationStrings {
   static const packageUnitsAmountLabel = "Amount";
 
   static const standardizedUnitsLabel = "Compare all items using:";
+
+  static const deletedItemLabel = "Item deleted";
+  static const restoreItemLabel = "Undo";
 }
