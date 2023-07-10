@@ -83,14 +83,16 @@ class ComparisonItem extends StatelessWidget {
               Expanded(
                 child: Padding(
                   padding: const EdgeInsets.all(8.0),
-                  child: TextField(
-                    keyboardType: TextInputType.text,
-                    controller: _itemNameController,
-                    decoration: const InputDecoration(
-                      labelText: ApplicationStrings.itemNameLabel,
+                  child: Focus(
+                    child: TextField(
+                      keyboardType: TextInputType.text,
+                      controller: _itemNameController,
+                      decoration: const InputDecoration(
+                        labelText: ApplicationStrings.itemNameLabel,
+                      ),
                     ),
-                    onChanged: (value) => onBlurTextField(
-                        details, ComparisonItemField.name, value),
+                    onFocusChange: (hasFocus) => onBlurTextField(details,
+                        ComparisonItemField.name, _itemNameController.text),
                   ),
                 ),
               ),
