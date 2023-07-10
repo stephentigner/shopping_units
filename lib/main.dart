@@ -235,7 +235,7 @@ class _MainScreenState extends State<MainScreen> {
               items: UnitType.filteredValues(_isFluidMeasure)
                   .map((e) => DropdownMenuItem<UnitType>(
                         value: e,
-                        child: Text(e.abbreviation),
+                        child: Text(e.pluralAbbreviation),
                       ))
                   .toList(),
               onChanged: (value) {

@@ -165,7 +165,7 @@ class ComparisonItem extends StatelessWidget {
                     items: UnitType.filteredValues(details.isFluidMeasure)
                         .map((e) => DropdownMenuItem<UnitType>(
                               value: e,
-                              child: Text(e.abbreviation),
+                              child: Text(e.pluralAbbreviation),
                             ))
                         .toList(),
                     onChanged: (value) => {
