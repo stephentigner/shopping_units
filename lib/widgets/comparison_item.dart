@@ -59,11 +59,11 @@ class ComparisonItem extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Padding(
-                padding: EdgeInsets.all(8.0),
-                child: Expanded(
+              Expanded(
+                child: Padding(
+                  padding: EdgeInsets.all(8.0),
                   child: Text(
-                    ApplicationStrings.deletedItemLabel,
+                    details.deletedItemLabel,
                     textScaleFactor: 1.5,
                   ),
                 ),

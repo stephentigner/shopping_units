@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:shopping_units/enums/unit_type.dart';
+import 'package:shopping_units/utils/application_strings.dart';
 import 'package:shopping_units/utils/unit_conversions.dart';
 
 class ItemDetails {
@@ -52,4 +53,8 @@ class ItemDetails {
   String get standardizedPriceDisplay => standardizedPrice > 0
       ? "\$${standardizedPrice.toStringAsFixed(2)}/${standardizedUnits.abbreviation}"
       : "";
+
+  String get deletedItemLabel => name.isNotEmpty
+      ? '"${name}" deleted'
+      : ApplicationStrings.deletedItemLabel;
 }
