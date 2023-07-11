@@ -54,7 +54,6 @@ class ItemDetails {
       ? "\$${standardizedPrice.toStringAsFixed(2)}/${standardizedUnits.abbreviation}"
       : "";
 
-  String get deletedItemLabel => name.isNotEmpty
-      ? '"${name}" deleted'
-      : ApplicationStrings.deletedItemLabel;
+  String get deletedItemLabel =>
+      name.isNotEmpty ? '"$name" deleted' : ApplicationStrings.deletedItemLabel;
 }

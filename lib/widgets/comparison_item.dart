@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shopping_units/enums/comparison_item_field.dart';
@@ -5,22 +7,27 @@ import 'package:shopping_units/enums/unit_type.dart';
 import 'package:shopping_units/models/item_details.dart';
 import 'package:shopping_units/utils/application_strings.dart';
 
-class ComparisonItem extends StatelessWidget {
-  final ItemDetails details;
-  final void Function(ItemDetails, ComparisonItemField, UnitType?)
-      onChangedUnitDropdown;
-  final void Function(ItemDetails, ComparisonItemField, String) onBlurTextField;
+class ComparisonItem extends StatefulWidget {
+  final ItemDetails details = ItemDetails();
+  final int deletionNoticeTimeoutInSeconds;
+  final void Function(ItemDetails) onItemMarkedDeleted;
   final void Function(ItemDetails) onDeleteItem;
-  final void Function(ItemDetails) onRestoreItem;
+  // final void Function(ItemDetails) onRestoreItem;
 
-  ComparisonItem(
-      {Key? key,
-      required this.details,
-      required this.onChangedUnitDropdown,
-      required this.onBlurTextField,
-      required this.onDeleteItem,
-      required this.onRestoreItem})
-      : super(key: key);
+  ComparisonItem({
+    Key? key,
+    required this.deletionNoticeTimeoutInSeconds,
+    required this.onItemMarkedDeleted,
+    required this.onDeleteItem,
+    // required this.onRestoreItem,
+  }) : super(key: key);
+
+  @override
+  State<ComparisonItem> createState() => _ComparisonItemState();
+}
+
+class _ComparisonItemState extends State<ComparisonItem> {
+  ItemDetails get _details => widget.details;
 
   //TextEditingControllers
   final _itemNameController = TextEditingController();
@@ -39,20 +46,111 @@ class ComparisonItem extends StatelessWidget {
       FilteringTextInputFormatter.allow(RegExp(r"^\d*\.?\d*"));
 
   void _initControllers() {
-    _itemNameController.text = details.name;
-    _packagePriceController.text = details.packagePrice != null
-        ? details.packagePrice!.toStringAsFixed(2)
+    _itemNameController.text = _details.name;
+    _packagePriceController.text = _details.packagePrice != null
+        ? _details.packagePrice!.toStringAsFixed(2)
         : "";
-    _packageUnitsAmountController.text = details.packageUnitsAmount != null
-        ? details.packageUnitsAmount.toString()
+    _packageUnitsAmountController.text = _details.packageUnitsAmount != null
+        ? _details.packageUnitsAmount.toString()
         : "";
   }
 
   @override
-  Widget build(BuildContext context) {
+  void initState() {
     _initControllers();
+    super.initState();
+  }
 
-    if (details.isDeleted) {
+  void _changeUnitDropdown(
+    ComparisonItemField dropdown,
+    UnitType? newValue,
+  ) {
+    UnitType nullSafeNewValue =
+        newValue ?? UnitType.defaultUnit(_details.isFluidMeasure);
+    setState(() {
+      switch (dropdown) {
+        case ComparisonItemField.packageUnits:
+          _details.packageUnits = nullSafeNewValue;
+          break;
+        default:
+        //if unmatched, do nothing for now
+      }
+    });
+  }
+
+  void _changeTextField(
+    ComparisonItemField field,
+    String newValue,
+  ) {
+    //pre-process values when applicable to reduce duplicate code
+    double? parsedDouble;
+    bool validDouble = false;
+
+    switch (field) {
+      case ComparisonItemField.packagePrice:
+      case ComparisonItemField.packageUnitsAmount:
+        parsedDouble = double.tryParse(newValue);
+        validDouble = parsedDouble != null && parsedDouble >= 0;
+        break;
+      default:
+      //if unmatched, do nothing for now
+    }
+
+    setState(() {
+      switch (field) {
+        case ComparisonItemField.name:
+          _details.name = newValue;
+          break;
+        case ComparisonItemField.packagePrice:
+          //Only update the model if the parsedPrice is a valid price
+          //A valid price is parseable and is greater than or equal to 0
+          if (validDouble) {
+            _details.packagePrice = parsedDouble!;
+          }
+          break;
+        case ComparisonItemField.packageUnitsAmount:
+          if (validDouble) {
+            _details.packageUnitsAmount = parsedDouble!;
+          }
+          break;
+        default:
+        //if unmatched, do nothing for now
+      }
+    });
+  }
+
+  void _deleteItem() {
+    _details.isDeleted = true;
+    _details.deletionNoticeTimeRemaining =
+        widget.deletionNoticeTimeoutInSeconds;
+    //If there is an existing timer for this item, cancel it
+    _details.deletionNoticeTimer?.cancel();
+    _details.deletionNoticeTimer =
+        Timer.periodic(const Duration(seconds: 1), (timer) {
+      setState(() {
+        _details.deletionNoticeTimeRemaining--;
+        if (_details.deletionNoticeTimeRemaining <= 0) {
+          timer.cancel();
+          if (_details.isDeleted) {
+            widget.onDeleteItem(_details);
+          }
+        }
+      });
+    });
+    widget.onItemMarkedDeleted(_details);
+  }
+
+  void _restoreItem() {
+    setState(() {
+      _details.isDeleted = false;
+      _details.deletionNoticeTimer?.cancel();
+      _details.deletionNoticeTimeRemaining = 0;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_details.isDeleted) {
       return Column(
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
@@ -61,17 +159,17 @@ class ComparisonItem extends StatelessWidget {
             children: [
               Expanded(
                 child: Padding(
-                  padding: EdgeInsets.all(8.0),
+                  padding: const EdgeInsets.all(8.0),
                   child: Text(
-                    details.deletedItemLabel,
+                    _details.deletedItemLabel,
                     textScaleFactor: 1.5,
                   ),
                 ),
               ),
               TextButton(
-                  onPressed: () => onRestoreItem(details),
+                  onPressed: () => _restoreItem(),
                   child: Text(
-                    "${ApplicationStrings.restoreItemLabel} (${details.deletionNoticeTimeRemaining})",
+                    "${ApplicationStrings.restoreItemLabel} (${_details.deletionNoticeTimeRemaining})",
                     textScaleFactor: 1.5,
                   ))
             ],
@@ -87,21 +185,19 @@ class ComparisonItem extends StatelessWidget {
               Expanded(
                 child: Padding(
                   padding: const EdgeInsets.all(8.0),
-                  child: Focus(
-                    child: TextField(
-                      keyboardType: TextInputType.text,
-                      controller: _itemNameController,
-                      decoration: const InputDecoration(
-                        labelText: ApplicationStrings.itemNameLabel,
-                      ),
+                  child: TextField(
+                    keyboardType: TextInputType.text,
+                    controller: _itemNameController,
+                    decoration: const InputDecoration(
+                      labelText: ApplicationStrings.itemNameLabel,
                     ),
-                    onFocusChange: (hasFocus) => onBlurTextField(details,
-                        ComparisonItemField.name, _itemNameController.text),
+                    onChanged: (value) =>
+                        _changeTextField(ComparisonItemField.name, value),
                   ),
                 ),
               ),
               IconButton(
-                  onPressed: () => onDeleteItem(details),
+                  onPressed: () => _deleteItem(),
                   icon: const Icon(Icons.delete))
             ],
           ),
@@ -109,50 +205,36 @@ class ComparisonItem extends StatelessWidget {
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.all(8.0),
-                child: Focus(
-                  child: TextField(
-                    keyboardType: const TextInputType.numberWithOptions(
-                        signed: false, decimal: true),
-                    controller: _packagePriceController,
-                    decoration: const InputDecoration(
-                      labelText: ApplicationStrings.packagePriceLabel,
-                      prefixIcon: Text(
-                        "\$",
-                        textScaleFactor: 2,
-                      ),
+                child: TextField(
+                  keyboardType: const TextInputType.numberWithOptions(
+                      signed: false, decimal: true),
+                  controller: _packagePriceController,
+                  decoration: const InputDecoration(
+                    labelText: ApplicationStrings.packagePriceLabel,
+                    prefixIcon: Text(
+                      "\$",
+                      textScaleFactor: 2,
                     ),
-                    inputFormatters: [_currencyFormatter],
                   ),
-                  onFocusChange: (hasFocus) {
-                    if (!hasFocus) {
-                      onBlurTextField(details, ComparisonItemField.packagePrice,
-                          _packagePriceController.text);
-                    }
-                  },
+                  inputFormatters: [_currencyFormatter],
+                  onChanged: (value) =>
+                      _changeTextField(ComparisonItemField.packagePrice, value),
                 ),
               ),
             ),
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.all(8.0),
-                child: Focus(
-                  child: TextField(
-                    keyboardType: const TextInputType.numberWithOptions(
-                        signed: false, decimal: true),
-                    controller: _packageUnitsAmountController,
-                    decoration: const InputDecoration(
-                      labelText: ApplicationStrings.packageUnitsAmountLabel,
-                    ),
-                    inputFormatters: [_unitsFormatter],
+                child: TextField(
+                  keyboardType: const TextInputType.numberWithOptions(
+                      signed: false, decimal: true),
+                  controller: _packageUnitsAmountController,
+                  decoration: const InputDecoration(
+                    labelText: ApplicationStrings.packageUnitsAmountLabel,
                   ),
-                  onFocusChange: (hasFocus) {
-                    if (!hasFocus) {
-                      onBlurTextField(
-                          details,
-                          ComparisonItemField.packageUnitsAmount,
-                          _packageUnitsAmountController.text);
-                    }
-                  },
+                  inputFormatters: [_unitsFormatter],
+                  onChanged: (value) => _changeTextField(
+                      ComparisonItemField.packageUnitsAmount, value),
                 ),
               ),
             ),
@@ -161,29 +243,29 @@ class ComparisonItem extends StatelessWidget {
                 padding: const EdgeInsets.all(8.0),
                 child: DropdownButtonHideUnderline(
                   child: DropdownButton<UnitType>(
-                    value: details.packageUnits,
-                    items: UnitType.filteredValues(details.isFluidMeasure)
+                    value: _details.packageUnits,
+                    items: UnitType.filteredValues(_details.isFluidMeasure)
                         .map((e) => DropdownMenuItem<UnitType>(
                               value: e,
                               child: Text(e.pluralAbbreviation),
                             ))
                         .toList(),
                     onChanged: (value) => {
-                      onChangedUnitDropdown(
-                          details, ComparisonItemField.packageUnits, value)
+                      _changeUnitDropdown(
+                          ComparisonItemField.packageUnits, value)
                     },
                   ),
                 ),
               ),
             ),
           ]),
-          if (details.standardizedPrice > 0)
+          if (_details.standardizedPrice > 0)
             Row(
               children: [
                 Expanded(
                   child: Padding(
                     padding: const EdgeInsets.all(8.0),
-                    child: Text(details.standardizedPriceDisplay),
+                    child: Text(_details.standardizedPriceDisplay),
                   ),
                 ),
               ],
