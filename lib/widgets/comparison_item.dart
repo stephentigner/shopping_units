@@ -240,23 +240,25 @@ class _ComparisonItemState extends State<ComparisonItem> {
             ),
             Expanded(
               child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: DropdownButtonHideUnderline(
-                  child: DropdownButton<UnitType>(
-                    value: _details.packageUnits,
-                    items: UnitType.filteredValues(_details.isFluidMeasure)
-                        .map((e) => DropdownMenuItem<UnitType>(
-                              value: e,
-                              child: Text(e.pluralAbbreviation),
-                            ))
-                        .toList(),
-                    onChanged: (value) => {
-                      _changeUnitDropdown(
-                          ComparisonItemField.packageUnits, value)
-                    },
-                  ),
-                ),
-              ),
+                  padding: const EdgeInsets.all(8.0),
+                  child: ListenableBuilder(
+                    listenable: _details,
+                    builder: (context, child) => DropdownButtonHideUnderline(
+                      child: DropdownButton<UnitType>(
+                        value: _details.packageUnits,
+                        items: UnitType.filteredValues(_details.isFluidMeasure)
+                            .map((e) => DropdownMenuItem<UnitType>(
+                                  value: e,
+                                  child: Text(e.pluralAbbreviation),
+                                ))
+                            .toList(),
+                        onChanged: (value) => {
+                          _changeUnitDropdown(
+                              ComparisonItemField.packageUnits, value)
+                        },
+                      ),
+                    ),
+                  )),
             ),
           ]),
           if (_details.standardizedPrice > 0)
@@ -264,9 +266,12 @@ class _ComparisonItemState extends State<ComparisonItem> {
               children: [
                 Expanded(
                   child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Text(_details.standardizedPriceDisplay),
-                  ),
+                      padding: const EdgeInsets.all(8.0),
+                      child: ListenableBuilder(
+                        listenable: _details,
+                        builder: (context, child) =>
+                            Text(_details.standardizedPriceDisplay),
+                      )),
                 ),
               ],
             ),

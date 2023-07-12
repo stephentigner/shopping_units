@@ -5,7 +5,12 @@ import 'package:shopping_units/enums/unit_type.dart';
 import 'package:shopping_units/utils/application_strings.dart';
 import 'package:shopping_units/utils/unit_conversions.dart';
 
-class ItemDetails {
+class ItemDetails with ChangeNotifier {
+  String _name = "";
+  double? _packagePrice;
+  double? _packageUnitsAmount;
+  UnitType _packageUnits = UnitType.defaultSolidUnit;
+  UnitType _standardizedUnits = UnitType.defaultSolidUnit;
   bool _isFluidMeasure = false;
 
   UniqueKey key = UniqueKey();
@@ -13,11 +18,35 @@ class ItemDetails {
   int deletionNoticeTimeRemaining = 0;
   Timer? deletionNoticeTimer;
 
-  String name = "";
-  double? packagePrice;
-  double? packageUnitsAmount;
-  UnitType packageUnits = UnitType.defaultSolidUnit;
-  UnitType standardizedUnits = UnitType.defaultSolidUnit;
+  String get name => _name;
+  set name(String value) {
+    _name = value;
+    notifyListeners();
+  }
+
+  double? get packagePrice => _packagePrice;
+  set packagePrice(double? value) {
+    _packagePrice = value;
+    notifyListeners();
+  }
+
+  double? get packageUnitsAmount => _packageUnitsAmount;
+  set packageUnitsAmount(double? value) {
+    _packageUnitsAmount = value;
+    notifyListeners();
+  }
+
+  UnitType get packageUnits => _packageUnits;
+  set packageUnits(UnitType value) {
+    _packageUnits = value;
+    notifyListeners();
+  }
+
+  UnitType get standardizedUnits => _standardizedUnits;
+  set standardizedUnits(UnitType value) {
+    _standardizedUnits = value;
+    notifyListeners();
+  }
 
   double get standardizedPrice {
     double? convertedAmount;

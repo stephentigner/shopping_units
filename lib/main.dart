@@ -4,6 +4,7 @@ import 'dart:collection';
 import 'package:flutter/material.dart';
 import 'package:shopping_units/enums/comparison_item_field.dart';
 import 'package:shopping_units/enums/unit_type.dart';
+import 'package:shopping_units/models/comparison_list_model.dart';
 import 'package:shopping_units/models/item_details.dart';
 import 'package:shopping_units/utils/application_strings.dart';
 import 'package:shopping_units/widgets/comparison_item.dart';
@@ -59,11 +60,21 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   static const int _deletionNoticeTimeoutInSeconds = 30;
-  final ComparisonList _comparisonList = const ComparisonList();
+  final ComparisonListModel _comparisonListModel = ComparisonListModel();
+  late ComparisonList _comparisonList;
 
   bool _isFluidMeasure = false;
   int _measureTypeIndex = 0;
   UnitType _standardizedUnits = UnitType.defaultSolidUnit;
+
+  @override
+  void initState() {
+    _comparisonList = ComparisonList(
+      deletionNoticeTimeoutInSeconds: _deletionNoticeTimeoutInSeconds,
+      comparisonListModel: _comparisonListModel,
+    );
+    super.initState();
+  }
 
   void _toggleMeasureType(int? measureTypeIndex) {
     setState(() {
@@ -79,9 +90,7 @@ class _MainScreenState extends State<MainScreen> {
         //if unmatched, do nothing for now
       }
 
-      // for (var item in _comparisonItems.values) {
-      //   item.isFluidMeasure = _isFluidMeasure;
-      // }
+      _comparisonListModel.isFluidMeasure = _isFluidMeasure;
       _standardizedUnits = UnitType.defaultUnit(_isFluidMeasure);
     });
   }
@@ -121,9 +130,7 @@ class _MainScreenState extends State<MainScreen> {
                   UnitType nullCheckedValue =
                       value ?? UnitType.defaultUnit(_isFluidMeasure);
                   _standardizedUnits = nullCheckedValue;
-                  // for (var element in _comparisonItems.values) {
-                  //   element.standardizedUnits = nullCheckedValue;
-                  // }
+                  _comparisonListModel.standardizedUnits = nullCheckedValue;
                 });
               },
             )
@@ -131,7 +138,11 @@ class _MainScreenState extends State<MainScreen> {
         )
       ],
       floatingActionButton: FloatingActionButton(
-        onPressed: () {}, //_addComparisonItemToState,
+        onPressed: () {
+          if (_comparisonListModel.addComparisonItemCallback != null) {
+            _comparisonListModel.addComparisonItemCallback!();
+          }
+        }, //_addComparisonItemToState,
         tooltip: 'Add new item',
         child: const Icon(Icons.add),
       ),

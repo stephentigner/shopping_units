@@ -1,42 +1,35 @@
-import 'dart:collection';
-
 import 'package:flutter/material.dart';
+import 'package:shopping_units/models/comparison_list_model.dart';
 import 'package:shopping_units/models/item_details.dart';
-import 'package:shopping_units/widgets/comparison_item.dart';
 
 class ComparisonList extends StatefulWidget {
   const ComparisonList(
       {super.key,
       this.minItemCount = 2,
-      this.deletionNoticeTimeoutInSeconds = 30});
+      this.deletionNoticeTimeoutInSeconds = 30,
+      required this.comparisonListModel});
 
   final int minItemCount;
   final int deletionNoticeTimeoutInSeconds;
+  final ComparisonListModel comparisonListModel;
 
   @override
   State<ComparisonList> createState() => _ComparisonListState();
 }
 
 class _ComparisonListState extends State<ComparisonList> {
-  final LinkedHashMap<UniqueKey, ComparisonItem> _comparisonItems =
-      LinkedHashMap<UniqueKey, ComparisonItem>();
-
   @override
   void initState() {
+    widget.comparisonListModel.addComparisonItemCallback =
+        _addComparisonItemToState;
     _addComparisonItem();
     _addComparisonItem();
     super.initState();
   }
 
   void _addComparisonItem() {
-    ComparisonItem item = ComparisonItem(
-      key: GlobalKey(),
-      deletionNoticeTimeoutInSeconds: widget.deletionNoticeTimeoutInSeconds,
-      onItemMarkedDeleted: _markItemDeleted,
-      onDeleteItem: _deleteItem,
-      // onRestoreItem: _restoreItem,
-    );
-    _comparisonItems[item.details.key] = item;
+    widget.comparisonListModel.addComparisonItem(
+        widget.deletionNoticeTimeoutInSeconds, _markItemDeleted, _deleteItem);
   }
 
   void _addComparisonItemToState() {
@@ -47,11 +40,7 @@ class _ComparisonListState extends State<ComparisonList> {
 
   void _markItemDeleted(ItemDetails item) {
     setState(() {
-      if (_comparisonItems.values
-              .where((currentItem) =>
-                  !currentItem.details.isDeleted && currentItem.details != item)
-              .length <
-          2) {
+      if (widget.comparisonListModel.validItemCountExcluding(item) < 2) {
         _addComparisonItem();
       }
     });
@@ -60,16 +49,8 @@ class _ComparisonListState extends State<ComparisonList> {
   void _deleteItem(ItemDetails item) {
     setState(() {
       if (item.isDeleted) {
-        _comparisonItems.remove(item.key);
+        widget.comparisonListModel.removeComparisonItem(item.key);
       }
-    });
-  }
-
-  void _restoreItem(ItemDetails item) {
-    setState(() {
-      item.isDeleted = false;
-      item.deletionNoticeTimer?.cancel();
-      item.deletionNoticeTimeRemaining = 0;
     });
   }
 
@@ -77,7 +58,7 @@ class _ComparisonListState extends State<ComparisonList> {
   Widget build(BuildContext context) {
     return ListView(
       shrinkWrap: false,
-      children: _comparisonItems.values.toList(),
+      children: widget.comparisonListModel.values,
     );
   }
 }
