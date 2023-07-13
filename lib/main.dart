@@ -17,9 +17,11 @@ class ShoppingUnits extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Unit Price comparison',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
+      theme:
+          ThemeData(primarySwatch: Colors.blue, brightness: Brightness.light),
+      darkTheme:
+          ThemeData(primarySwatch: Colors.blue, brightness: Brightness.dark),
+      themeMode: ThemeMode.system,
       home: const MainScreen(title: 'Unit Price Comparison'),
     );
   }
