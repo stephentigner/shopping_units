@@ -1,7 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.shopping_units">
+    package="com.stephentigner.shopping_units">
    <application
-        android:label="shopping_units"
+        android:label="Unit Price Comparison"
         android:name="${applicationName}"
         android:icon="@mipmap/launcher_icon">
         <activity
