@@ -120,9 +120,11 @@ class _ComparisonItemState extends State<ComparisonItem> {
   }
 
   void _deleteItem() {
-    _details.isDeleted = true;
-    _details.deletionNoticeTimeRemaining =
-        widget.deletionNoticeTimeoutInSeconds;
+    setState(() {
+      _details.isDeleted = true;
+      _details.deletionNoticeTimeRemaining =
+          widget.deletionNoticeTimeoutInSeconds;
+    });
     //If there is an existing timer for this item, cancel it
     _details.deletionNoticeTimer?.cancel();
     _details.deletionNoticeTimer =
