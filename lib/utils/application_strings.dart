@@ -1,5 +1,5 @@
 class ApplicationStrings {
-  static const applicationTitle = "Unit Price Comparison";
+  static const applicationTitle = "Better Buy";
 
   //ComparisonItem widget
   static const itemNameLabel = "Item name";
