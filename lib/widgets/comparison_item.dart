@@ -10,16 +10,14 @@ import 'package:shopping_units/utils/application_strings.dart';
 class ComparisonItem extends StatefulWidget {
   final ItemDetails details = ItemDetails();
   final int deletionNoticeTimeoutInSeconds;
-  final void Function(ItemDetails) onItemMarkedDeleted;
-  final void Function(ItemDetails) onDeleteItem;
-  // final void Function(ItemDetails) onRestoreItem;
+  final void Function(ItemDetails)? onItemMarkedDeleted;
+  final void Function(ItemDetails)? onDeleteItem;
 
   ComparisonItem({
     Key? key,
     required this.deletionNoticeTimeoutInSeconds,
-    required this.onItemMarkedDeleted,
-    required this.onDeleteItem,
-    // required this.onRestoreItem,
+    this.onItemMarkedDeleted,
+    this.onDeleteItem,
   }) : super(key: key);
 
   @override
@@ -133,13 +131,15 @@ class _ComparisonItemState extends State<ComparisonItem> {
         _details.deletionNoticeTimeRemaining--;
         if (_details.deletionNoticeTimeRemaining <= 0) {
           timer.cancel();
-          if (_details.isDeleted) {
-            widget.onDeleteItem(_details);
+          if (_details.isDeleted && widget.onDeleteItem != null) {
+            widget.onDeleteItem!(_details);
           }
         }
       });
     });
-    widget.onItemMarkedDeleted(_details);
+    if (widget.onItemMarkedDeleted != null) {
+      widget.onItemMarkedDeleted!(_details);
+    }
   }
 
   void _restoreItem() {

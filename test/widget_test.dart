@@ -7,24 +7,39 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shopping_units/enums/unit_type.dart';
 
 import 'package:shopping_units/main.dart';
+import 'package:shopping_units/utils/application_strings.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const ShoppingUnits());
+  testWidgets('Unit price displays properly once valid values are entered',
+      (widgetTester) async {
+    //Build the app and trigger a frame to make sure the app is ready for input
+    await widgetTester.pumpWidget(const ShoppingUnits());
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+    //Verify that our computed unit price does not display with no values entered
+    expect(find.textContaining("/${UnitType.defaultSolidUnit.abbreviation}"),
+        findsNothing);
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
+    //Enter values for the first item, then trigger a frame
+    const testPrice = 5;
+    const testUnitsAmount = 2;
+    await widgetTester.enterText(
+        find
+            .bySemanticsLabel(RegExp(ApplicationStrings.packagePriceLabel))
+            .first,
+        "$testPrice");
+    await widgetTester.enterText(
+        find
+            .bySemanticsLabel(
+                RegExp(ApplicationStrings.packageUnitsAmountLabel))
+            .first,
+        "$testUnitsAmount");
+    await widgetTester.pump();
 
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    //Verify that our computed price displays now
+    expect(find.textContaining("/${UnitType.defaultSolidUnit.abbreviation}"),
+        findsOneWidget);
   });
 }
