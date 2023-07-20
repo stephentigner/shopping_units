@@ -4,6 +4,7 @@ import 'package:shopping_units/models/comparison_list_model.dart';
 import 'package:shopping_units/utils/application_strings.dart';
 import 'package:shopping_units/widgets/comparison_list.dart';
 import 'package:toggle_switch/toggle_switch.dart';
+import 'package:url_launcher/link.dart';
 
 void main() {
   runApp(const ShoppingUnits());
@@ -78,6 +79,37 @@ class _MainScreenState extends State<MainScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title),
+      ),
+      drawer: Drawer(
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            SizedBox(
+              height: 80,
+              child: DrawerHeader(
+                decoration:
+                    BoxDecoration(color: Theme.of(context).primaryColor),
+                child: const Text(ApplicationStrings.applicationTitle),
+              ),
+            ),
+            ListTile(
+              title: Link(
+                uri: Uri.parse(ApplicationStrings.privacyPolicyLink),
+                builder: (context, followLink) => InkWell(
+                  onTap: followLink,
+                  child: const Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(ApplicationStrings.privacyPolicyLinkText),
+                      Icon(Icons.launch)
+                    ],
+                  ),
+                ),
+                target: LinkTarget.blank,
+              ),
+            ),
+          ],
+        ),
       ),
       body: Center(
         child: _comparisonList,

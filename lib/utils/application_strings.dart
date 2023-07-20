@@ -11,4 +11,8 @@ class ApplicationStrings {
 
   static const deletedItemLabel = "Item deleted";
   static const restoreItemLabel = "Undo";
+
+  static const privacyPolicyLink =
+      "https://github.com/stephentigner/public_docs/blob/main/simple_mobile_app_privacy_policy.md";
+  static const privacyPolicyLinkText = "Privacy Policy";
 }
