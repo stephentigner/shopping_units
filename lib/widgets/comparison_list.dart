@@ -6,7 +6,7 @@ class ComparisonList extends StatefulWidget {
   const ComparisonList(
       {super.key,
       this.minItemCount = 2,
-      this.deletionNoticeTimeoutInSeconds = 30,
+      this.deletionNoticeTimeoutInSeconds = 10,
       required this.comparisonListModel});
 
   final int minItemCount;

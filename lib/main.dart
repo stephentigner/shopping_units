@@ -37,7 +37,7 @@ class MainScreen extends StatefulWidget {
 }
 
 class _MainScreenState extends State<MainScreen> {
-  static const int _deletionNoticeTimeoutInSeconds = 30;
+  static const int _deletionNoticeTimeoutInSeconds = 10;
   final ComparisonListModel _comparisonListModel = ComparisonListModel();
   late ComparisonList _comparisonList;
 
