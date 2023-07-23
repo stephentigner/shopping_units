@@ -1,16 +1,16 @@
-# shopping_units
+# Better Buy
 
-A new Flutter project.
+This is a simple app I originally wrote to help me learn Flutter development.
+It calculates unit prices for items and can convert between types of units to allow for easier unit price comparisons between items when their weights or volumes are given in dissimilar units.
 
-## Getting Started
+## Basic usage
 
-This project is a starting point for a Flutter application.
+For each item, you can enter in a price and units amount, and select the type of unit.
+Once the price and units amount have been entered for an item, the computed unit price is then shown below that item.
 
-A few resources to get you started if this is your first Flutter project:
+## Pull requests
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+I wrote this as a personal learning and portfolio project, and have opened it up here on github with those goals in mind. 😊
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+I have no plans to accept pull requests on this repository, so please don't create them.
+They will either be ignored or, at best, closed w/o being merged.
