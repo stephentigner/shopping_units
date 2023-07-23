@@ -15,4 +15,8 @@ class ApplicationStrings {
   static const privacyPolicyLink =
       "https://github.com/stephentigner/public_docs/blob/main/simple_mobile_app_privacy_policy.md";
   static const privacyPolicyLinkText = "Privacy Policy";
+
+  static const licenseLink =
+      "https://github.com/stephentigner/shopping_units/blob/main/LICENSE.md";
+  static const licenseLinkText = "License";
 }

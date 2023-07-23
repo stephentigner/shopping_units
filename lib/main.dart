@@ -108,6 +108,22 @@ class _MainScreenState extends State<MainScreen> {
                 target: LinkTarget.blank,
               ),
             ),
+            ListTile(
+              title: Link(
+                uri: Uri.parse(ApplicationStrings.licenseLink),
+                builder: (context, followLink) => InkWell(
+                  onTap: followLink,
+                  child: const Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(ApplicationStrings.licenseLinkText),
+                      Icon(Icons.launch)
+                    ],
+                  ),
+                ),
+                target: LinkTarget.blank,
+              ),
+            ),
           ],
         ),
       ),
