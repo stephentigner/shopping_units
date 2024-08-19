@@ -102,7 +102,7 @@ class _MainScreenState extends State<MainScreen> {
           padding: EdgeInsets.zero,
           children: [
             SizedBox(
-              height: 80,
+              height: 100,
               child: DrawerHeader(
                 decoration:
                     BoxDecoration(color: Theme.of(context).primaryColor),
