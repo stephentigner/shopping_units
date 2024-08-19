@@ -181,7 +181,7 @@ class _ComparisonItemState extends State<ComparisonItem> {
                   padding: const EdgeInsets.all(8.0),
                   child: Text(
                     _details.deletedItemLabel,
-                    textScaleFactor: 1.5,
+                    textScaler: const TextScaler.linear(1.5),
                   ),
                 ),
               ),
@@ -189,7 +189,7 @@ class _ComparisonItemState extends State<ComparisonItem> {
                   onPressed: () => _restoreItem(),
                   child: Text(
                     "${ApplicationStrings.restoreItemLabel} (${_details.deletionNoticeTimeRemaining})",
-                    textScaleFactor: 1.5,
+                    textScaler: const TextScaler.linear(1.5),
                   ))
             ],
           )
@@ -231,8 +231,8 @@ class _ComparisonItemState extends State<ComparisonItem> {
                   decoration: const InputDecoration(
                     labelText: ApplicationStrings.packagePriceLabel,
                     prefixIcon: Text(
-                      "\$",
-                      textScaleFactor: 2,
+                      ApplicationStrings.currencySymbol,
+                      textScaler: TextScaler.linear(2),
                     ),
                   ),
                   inputFormatters: [_currencyFormatter],
@@ -288,8 +288,16 @@ class _ComparisonItemState extends State<ComparisonItem> {
                       padding: const EdgeInsets.all(8.0),
                       child: ListenableBuilder(
                         listenable: _details,
-                        builder: (context, child) =>
-                            Text(_details.standardizedPriceDisplay),
+                        builder: (context, child) => Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(ApplicationStrings.unitPriceLabel),
+                            Text(
+                              _details.standardizedPriceDisplay,
+                              textScaler: const TextScaler.linear(1.5),
+                            ),
+                          ],
+                        ),
                       )),
                 ),
               ],

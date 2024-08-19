@@ -97,7 +97,7 @@ class ItemDetails with ChangeNotifier {
   }
 
   String get standardizedPriceDisplay => standardizedPrice > 0
-      ? "\$${standardizedPrice.toStringAsFixed(2)}/${standardizedUnits.abbreviation}"
+      ? "${ApplicationStrings.currencySymbol}${standardizedPrice.toStringAsFixed(2)}/${standardizedUnits.abbreviation}"
       : "";
 
   String get deletedItemLabel =>
