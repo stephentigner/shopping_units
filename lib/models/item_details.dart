@@ -29,6 +29,8 @@ class ItemDetails with ChangeNotifier {
   UnitType _packageUnits = UnitType.defaultSolidUnit;
   UnitType _standardizedUnits = UnitType.defaultSolidUnit;
   bool _isFluidMeasure = false;
+  bool _isMultiPack = false;
+  int _packageItemCount = 1;
 
   UniqueKey key = UniqueKey();
   bool isDeleted = false;
@@ -75,12 +77,17 @@ class ItemDetails with ChangeNotifier {
       convertedAmount = packageUnitsAmount;
     }
 
-    return packagePrice != null &&
-            packagePrice! > 0 &&
-            convertedAmount != null &&
-            convertedAmount > 0
-        ? packagePrice! / convertedAmount
-        : 0;
+    if (packagePrice != null &&
+        packagePrice! > 0 &&
+        convertedAmount != null &&
+        convertedAmount > 0) {
+      // For multi-packs, first get the price per individual item
+      double pricePerItem =
+          isMultiPack ? packagePrice! / packageItemCount : packagePrice!;
+      return pricePerItem / convertedAmount;
+    } else {
+      return 0;
+    }
   }
 
   bool get isFluidMeasure => _isFluidMeasure;
@@ -94,6 +101,18 @@ class ItemDetails with ChangeNotifier {
     if (standardizedUnits.isFluidMeasure != value) {
       standardizedUnits = UnitType.defaultUnit(value);
     }
+  }
+
+  bool get isMultiPack => _isMultiPack;
+  set isMultiPack(bool value) {
+    _isMultiPack = value;
+    notifyListeners();
+  }
+
+  int get packageItemCount => _packageItemCount;
+  set packageItemCount(int value) {
+    _packageItemCount = value < 1 ? 1 : value;
+    notifyListeners();
   }
 
   String get standardizedPriceDisplay => standardizedPrice > 0

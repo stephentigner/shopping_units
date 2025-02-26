@@ -19,10 +19,12 @@ class ApplicationStrings {
   static const applicationTitle = "Better Buy";
 
   //ComparisonItem widget
-  static const itemNameLabel = "Item name";
+  static const itemNameLabel = "Item name (optional)";
 
   static const packagePriceLabel = "Price";
   static const packageUnitsAmountLabel = "Amount";
+  static const multiPackLabel = "Multi-pack";
+  static const packageItemCountLabel = "# of Items";
 
   static const standardizedUnitsLabel = "Compare all items using";
 

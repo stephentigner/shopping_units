@@ -20,4 +20,5 @@ enum ComparisonItemField {
   packagePrice,
   packageUnitsAmount,
   packageUnits,
+  packageItemCount,
 }
