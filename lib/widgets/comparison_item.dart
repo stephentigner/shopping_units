@@ -103,12 +103,18 @@ class _ComparisonItemState extends State<ComparisonItem> {
     //pre-process values when applicable to reduce duplicate code
     double? parsedDouble;
     bool validDouble = false;
+    int? parsedInt;
+    bool validInt = false;
 
     switch (field) {
       case ComparisonItemField.packagePrice:
       case ComparisonItemField.packageUnitsAmount:
         parsedDouble = double.tryParse(newValue);
         validDouble = parsedDouble != null && parsedDouble >= 0;
+        break;
+      case ComparisonItemField.packageItemCount:
+        parsedInt = int.tryParse(newValue);
+        validInt = parsedInt != null && parsedInt >= 1;
         break;
       default:
       //if unmatched, do nothing for now
@@ -129,6 +135,11 @@ class _ComparisonItemState extends State<ComparisonItem> {
         case ComparisonItemField.packageUnitsAmount:
           if (validDouble) {
             _details.packageUnitsAmount = parsedDouble!;
+          }
+          break;
+        case ComparisonItemField.packageItemCount:
+          if (validInt) {
+            _details.packageItemCount = parsedInt!;
           }
           break;
         default:
@@ -255,7 +266,7 @@ class _ComparisonItemState extends State<ComparisonItem> {
                       });
                     },
                   ),
-                  const Text("Multi-pack"),
+                  const Text(ApplicationStrings.multiPackLabel),
                 ],
               ),
             ),
@@ -285,17 +296,11 @@ class _ComparisonItemState extends State<ComparisonItem> {
                     keyboardType: TextInputType.number,
                     controller: _packageItemCountController,
                     decoration: const InputDecoration(
-                      labelText: "# of Items",
+                      labelText: ApplicationStrings.packageItemCountLabel,
                     ),
                     inputFormatters: [_integerFormatter],
-                    onChanged: (value) {
-                      final intValue = int.tryParse(value);
-                      if (intValue != null && intValue >= 1) {
-                        setState(() {
-                          _details.packageItemCount = intValue;
-                        });
-                      }
-                    },
+                    onChanged: (value) => _changeTextField(
+                        ComparisonItemField.packageItemCount, value),
                   ),
                 ),
               ),
