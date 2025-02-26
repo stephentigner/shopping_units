@@ -48,6 +48,7 @@ class _ComparisonItemState extends State<ComparisonItem> {
   final _itemNameController = TextEditingController();
   final _packagePriceController = TextEditingController();
   final _packageUnitsAmountController = TextEditingController();
+  final _packageItemCountController = TextEditingController();
 
   //At the time of this writing (2023-07-03), the FilteringTextInputFormatter
   //documentation mentions that it "typically shouldn't be used with RegExps
@@ -59,6 +60,7 @@ class _ComparisonItemState extends State<ComparisonItem> {
       FilteringTextInputFormatter.allow(RegExp(r"^\d*\.?\d{0,2}"));
   final _unitsFormatter =
       FilteringTextInputFormatter.allow(RegExp(r"^\d*\.?\d*"));
+  final _integerFormatter = FilteringTextInputFormatter.allow(RegExp(r"^\d+"));
 
   void _initControllers() {
     _itemNameController.text = _details.name;
@@ -68,6 +70,7 @@ class _ComparisonItemState extends State<ComparisonItem> {
     _packageUnitsAmountController.text = _details.packageUnitsAmount != null
         ? _details.packageUnitsAmount.toString()
         : "";
+    _packageItemCountController.text = _details.packageItemCount.toString();
   }
 
   @override
@@ -242,6 +245,23 @@ class _ComparisonItemState extends State<ComparisonItem> {
               ),
             ),
             Expanded(
+              child: Row(
+                children: [
+                  Checkbox(
+                    value: _details.isMultiPack,
+                    onChanged: (bool? value) {
+                      setState(() {
+                        _details.isMultiPack = value ?? false;
+                      });
+                    },
+                  ),
+                  const Text("Multi-pack"),
+                ],
+              ),
+            ),
+          ]),
+          Row(children: [
+            Expanded(
               child: Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: TextField(
@@ -257,6 +277,28 @@ class _ComparisonItemState extends State<ComparisonItem> {
                 ),
               ),
             ),
+            if (_details.isMultiPack)
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: TextField(
+                    keyboardType: TextInputType.number,
+                    controller: _packageItemCountController,
+                    decoration: const InputDecoration(
+                      labelText: "# of Items",
+                    ),
+                    inputFormatters: [_integerFormatter],
+                    onChanged: (value) {
+                      final intValue = int.tryParse(value);
+                      if (intValue != null && intValue >= 1) {
+                        setState(() {
+                          _details.packageItemCount = intValue;
+                        });
+                      }
+                    },
+                  ),
+                ),
+              ),
             Expanded(
               child: Padding(
                   padding: const EdgeInsets.all(8.0),
