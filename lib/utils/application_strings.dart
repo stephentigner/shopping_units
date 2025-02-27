@@ -25,6 +25,7 @@ class ApplicationStrings {
   static const packageUnitsAmountLabel = "Amount";
   static const multiPackLabel = "Multi-pack";
   static const packageItemCountLabel = "# of Items";
+  static const scanLabelTooltip = "Scan package label for unit measurements";
 
   static const standardizedUnitsLabel = "Compare all items using";
 

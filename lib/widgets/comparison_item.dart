@@ -16,13 +16,17 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:shopping_units/enums/comparison_item_field.dart';
 import 'package:shopping_units/enums/unit_type.dart';
 import 'package:shopping_units/models/item_details.dart';
 import 'package:shopping_units/utils/application_strings.dart';
+import 'package:shopping_units/utils/unit_recognition.dart';
 
 class ComparisonItem extends StatefulWidget {
   final ItemDetails details = ItemDetails();
@@ -181,6 +185,66 @@ class _ComparisonItemState extends State<ComparisonItem> {
     });
   }
 
+  Future<void> _scanLabel() async {
+    // Request camera permission
+    final status = await Permission.camera.request();
+    if (!status.isGranted) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Camera permission is required to scan labels'),
+          ),
+        );
+      }
+      return;
+    }
+
+    try {
+      final ImagePicker picker = ImagePicker();
+      final XFile? image = await picker.pickImage(
+        source: ImageSource.camera,
+        preferredCameraDevice: CameraDevice.rear,
+      );
+
+      if (image != null && mounted) {
+        final measurement =
+            await UnitRecognition.recognizeUnits(File(image.path));
+
+        if (measurement != null) {
+          setState(() {
+            // Update isFluidMeasure if needed
+            if (_details.isFluidMeasure != measurement.unit.isFluidMeasure) {
+              _details.isFluidMeasure = measurement.unit.isFluidMeasure;
+            }
+
+            // Update the amount and units
+            _details.packageUnitsAmount = measurement.value;
+            _details.packageUnits = measurement.unit;
+
+            // Update the text controller to reflect the new value
+            _packageUnitsAmountController.text = measurement.value.toString();
+          });
+        } else {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('No unit measurements found in the image'),
+              ),
+            );
+          }
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Error scanning label'),
+          ),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_details.isDeleted) {
@@ -230,8 +294,14 @@ class _ComparisonItemState extends State<ComparisonItem> {
                 ),
               ),
               IconButton(
-                  onPressed: () => _deleteItem(),
-                  icon: const Icon(Icons.delete))
+                onPressed: _scanLabel,
+                icon: const Icon(Icons.document_scanner),
+                tooltip: ApplicationStrings.scanLabelTooltip,
+              ),
+              IconButton(
+                onPressed: () => _deleteItem(),
+                icon: const Icon(Icons.delete),
+              ),
             ],
           ),
           Row(children: [
