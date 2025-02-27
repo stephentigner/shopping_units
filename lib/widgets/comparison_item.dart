@@ -33,12 +33,14 @@ class ComparisonItem extends StatefulWidget {
   final int deletionNoticeTimeoutInSeconds;
   final void Function(ItemDetails)? onItemMarkedDeleted;
   final void Function(ItemDetails)? onDeleteItem;
+  final void Function(bool)? onMeasureTypeChanged;
 
   ComparisonItem({
     Key? key,
     required this.deletionNoticeTimeoutInSeconds,
     this.onItemMarkedDeleted,
     this.onDeleteItem,
+    this.onMeasureTypeChanged,
   }) : super(key: key);
 
   @override
@@ -211,12 +213,12 @@ class _ComparisonItemState extends State<ComparisonItem> {
             await UnitRecognition.recognizeUnits(File(image.path));
 
         if (measurement != null) {
-          setState(() {
-            // Update isFluidMeasure if needed
-            if (_details.isFluidMeasure != measurement.unit.isFluidMeasure) {
-              _details.isFluidMeasure = measurement.unit.isFluidMeasure;
-            }
+          // Update global fluid/solid state if needed
+          if (_details.isFluidMeasure != measurement.unit.isFluidMeasure) {
+            widget.onMeasureTypeChanged?.call(measurement.unit.isFluidMeasure);
+          }
 
+          setState(() {
             // Update the amount and units
             _details.packageUnitsAmount = measurement.value;
             _details.packageUnits = measurement.unit;
