@@ -55,42 +55,9 @@ class UnitRecognition {
   // Simple number pattern that matches integers and decimals
   static final _numberPattern = RegExp(r'(\d+\.?\d*)');
 
-  /// Processes an image file and returns the recognized text blocks and measurement
-  /// Returns null if no valid measurement is found
-  static Future<RecognitionResult> recognizeUnits(File imageFile) async {
-    try {
-      final inputImage = InputImage.fromFile(imageFile);
-      final recognizedText = await _textRecognizer.processImage(inputImage);
-
-      UnitMeasurement? foundMeasurement;
-
-      // Process each block of text
-      for (TextBlock block in recognizedText.blocks) {
-        for (TextLine line in block.lines) {
-          final measurement = _extractMeasurement(line.text, block);
-          if (measurement != null) {
-            foundMeasurement = measurement;
-            break;
-          }
-        }
-        if (foundMeasurement != null) break;
-      }
-
-      return RecognitionResult(recognizedText.blocks, foundMeasurement);
-    } catch (e) {
-      developer.log(
-        'Error during text recognition',
-        error: e,
-        name: 'UnitRecognition',
-        level: 1000, // Equivalent to severe/error level
-      );
-      return RecognitionResult([], null);
-    }
-  }
-
   /// Extracts the first valid measurement from a text string
   /// Returns null if no valid measurement is found
-  static UnitMeasurement? _extractMeasurement(String text, TextBlock block) {
+  static UnitMeasurement? extractMeasurement(String text, [TextBlock? block]) {
     // Add debug logging to see what we're processing
     developer.log(
       'Processing text for measurement',
@@ -123,6 +90,39 @@ class UnitRecognition {
       }
     }
     return null;
+  }
+
+  /// Processes an image file and returns the recognized text blocks and measurement
+  /// Returns null if no valid measurement is found
+  static Future<RecognitionResult> recognizeUnits(File imageFile) async {
+    try {
+      final inputImage = InputImage.fromFile(imageFile);
+      final recognizedText = await _textRecognizer.processImage(inputImage);
+
+      UnitMeasurement? foundMeasurement;
+
+      // Process each block of text
+      for (TextBlock block in recognizedText.blocks) {
+        for (TextLine line in block.lines) {
+          final measurement = extractMeasurement(line.text, block);
+          if (measurement != null) {
+            foundMeasurement = measurement;
+            break;
+          }
+        }
+        if (foundMeasurement != null) break;
+      }
+
+      return RecognitionResult(recognizedText.blocks, foundMeasurement);
+    } catch (e) {
+      developer.log(
+        'Error during text recognition',
+        error: e,
+        name: 'UnitRecognition',
+        level: 1000, // Equivalent to severe/error level
+      );
+      return RecognitionResult([], null);
+    }
   }
 
   /// Cleans up resources

@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
 import 'package:shopping_units/utils/application_strings.dart';
@@ -29,13 +28,15 @@ class _TextRecognitionViewState extends State<TextRecognitionView> {
   TextBlock? _selectedBlock;
   final GlobalKey _imageKey = GlobalKey();
   Size? _imageSize;
+  UnitMeasurement? _selectedMeasurement;
 
   @override
   void initState() {
     super.initState();
-    // If we have a measurement, pre-select its block
+    // If we have a measurement, pre-select its block and set it as selected measurement
     if (widget.recognitionResult.measurement?.textBlock != null) {
       _selectedBlock = widget.recognitionResult.measurement!.textBlock;
+      _selectedMeasurement = widget.recognitionResult.measurement;
     }
 
     // Load image to get its size
@@ -50,6 +51,14 @@ class _TextRecognitionViewState extends State<TextRecognitionView> {
         });
       }),
     );
+  }
+
+  void _updateSelectedBlock(TextBlock block) {
+    setState(() {
+      _selectedBlock = block;
+      // Try to find a measurement in this block
+      _selectedMeasurement = UnitRecognition.extractMeasurement(block.text);
+    });
   }
 
   @override
@@ -94,9 +103,7 @@ class _TextRecognitionViewState extends State<TextRecognitionView> {
                       height: rect.height,
                       child: GestureDetector(
                         onTap: () {
-                          setState(() {
-                            _selectedBlock = block;
-                          });
+                          _updateSelectedBlock(block);
                         },
                         child: Container(
                           decoration: BoxDecoration(
@@ -112,25 +119,45 @@ class _TextRecognitionViewState extends State<TextRecognitionView> {
             ),
           ),
           // Measurement preview
-          if (_selectedBlock != null &&
-              widget.recognitionResult.measurement != null)
+          if (_selectedBlock != null)
             Container(
               padding: const EdgeInsets.all(16.0),
               color: Theme.of(context).colorScheme.surfaceContainerHighest,
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text(
-                    ApplicationStrings.detectedMeasurementLabel,
-                    style: Theme.of(context).textTheme.bodyLarge,
-                  ),
-                  Text(
-                    '${widget.recognitionResult.measurement!.value} ${widget.recognitionResult.measurement!.unit.abbreviation}',
-                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: Theme.of(context).colorScheme.primary,
-                        ),
-                  ),
+                  if (_selectedMeasurement != null)
+                    Flexible(
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            ApplicationStrings.detectedMeasurementLabel,
+                            style: Theme.of(context).textTheme.bodyLarge,
+                          ),
+                          Text(
+                            '${_selectedMeasurement!.value} ${_selectedMeasurement!.unit.abbreviation}',
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodyLarge
+                                ?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: Theme.of(context).colorScheme.primary,
+                                ),
+                          ),
+                        ],
+                      ),
+                    )
+                  else
+                    Flexible(
+                      child: Text(
+                        ApplicationStrings.noMeasurementsInSelectionMessage,
+                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                              color: Theme.of(context).colorScheme.error,
+                            ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
                 ],
               ),
             ),
@@ -150,12 +177,10 @@ class _TextRecognitionViewState extends State<TextRecognitionView> {
                   onPressed: widget.onNewPhoto,
                   child: const Text(ApplicationStrings.newPhotoButton),
                 ),
-                if (_selectedBlock != null &&
-                    widget.recognitionResult.measurement != null)
+                if (_selectedBlock != null && _selectedMeasurement != null)
                   ElevatedButton(
                     onPressed: () {
-                      widget.onMeasurementSelected(
-                          widget.recognitionResult.measurement!);
+                      widget.onMeasurementSelected(_selectedMeasurement!);
                     },
                     child:
                         const Text(ApplicationStrings.acceptMeasurementButton),

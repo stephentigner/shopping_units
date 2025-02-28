@@ -51,6 +51,8 @@ class ApplicationStrings {
   static const retryButton = "Try Again";
   static const newPhotoButton = "Take New Photo";
   static const detectedMeasurementLabel = "Detected measurement: ";
+  static const noMeasurementsInSelectionMessage =
+      "No measurements found in selected text";
 
   //Menu links
   static const privacyPolicyLink =
