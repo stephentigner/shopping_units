@@ -69,7 +69,10 @@ class _TextRecognitionViewState extends State<TextRecognitionView> {
       ),
       body: Column(
         children: [
-          Expanded(
+          // Image container with fixed height
+          SizedBox(
+            height: MediaQuery.of(context).size.height *
+                0.6, // Reduced to 60% of screen height
             child: Stack(
               fit: StackFit.expand,
               children: [
@@ -118,73 +121,93 @@ class _TextRecognitionViewState extends State<TextRecognitionView> {
               ],
             ),
           ),
-          // Measurement preview
-          if (_selectedBlock != null)
-            Container(
-              padding: const EdgeInsets.all(16.0),
-              color: Theme.of(context).colorScheme.surfaceContainerHighest,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  if (_selectedMeasurement != null)
-                    Flexible(
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            ApplicationStrings.detectedMeasurementLabel,
-                            style: Theme.of(context).textTheme.bodyLarge,
-                          ),
-                          Text(
-                            '${_selectedMeasurement!.value} ${_selectedMeasurement!.unit.abbreviation}',
-                            style: Theme.of(context)
-                                .textTheme
-                                .bodyLarge
-                                ?.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                  color: Theme.of(context).colorScheme.primary,
-                                ),
-                          ),
-                        ],
-                      ),
-                    )
-                  else
-                    Flexible(
-                      child: Text(
-                        ApplicationStrings.noMeasurementsInSelectionMessage,
-                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                              color: Theme.of(context).colorScheme.error,
-                            ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
-                ],
-              ),
-            ),
-          // Bottom buttons
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Wrap(
-              alignment: WrapAlignment.spaceEvenly,
-              spacing: 8.0,
-              runSpacing: 8.0,
+          // Bottom section
+          Container(
+            padding: const EdgeInsets.symmetric(vertical: 8.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                TextButton(
-                  onPressed: widget.onRetry,
-                  child: const Text(ApplicationStrings.retryButton),
-                ),
-                TextButton(
-                  onPressed: widget.onNewPhoto,
-                  child: const Text(ApplicationStrings.newPhotoButton),
-                ),
-                if (_selectedBlock != null && _selectedMeasurement != null)
-                  ElevatedButton(
-                    onPressed: () {
-                      widget.onMeasurementSelected(_selectedMeasurement!);
-                    },
-                    child:
-                        const Text(ApplicationStrings.acceptMeasurementButton),
+                // Measurement preview
+                if (_selectedBlock != null)
+                  Container(
+                    padding: const EdgeInsets.all(16.0),
+                    color:
+                        Theme.of(context).colorScheme.surfaceContainerHighest,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        if (_selectedMeasurement != null)
+                          Flexible(
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  ApplicationStrings.detectedMeasurementLabel,
+                                  style: Theme.of(context).textTheme.bodyLarge,
+                                ),
+                                Text(
+                                  '${_selectedMeasurement!.value} ${_selectedMeasurement!.unit.abbreviation}',
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .bodyLarge
+                                      ?.copyWith(
+                                        fontWeight: FontWeight.bold,
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .primary,
+                                      ),
+                                ),
+                              ],
+                            ),
+                          )
+                        else
+                          Flexible(
+                            child: Text(
+                              ApplicationStrings
+                                  .noMeasurementsInSelectionMessage,
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodyLarge
+                                  ?.copyWith(
+                                    color: Theme.of(context).colorScheme.error,
+                                  ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                      ],
+                    ),
                   ),
+                // Bottom buttons
+                SafeArea(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Wrap(
+                      alignment: WrapAlignment.spaceEvenly,
+                      spacing: 8.0,
+                      runSpacing: 8.0,
+                      children: [
+                        TextButton(
+                          onPressed: widget.onRetry,
+                          child: const Text(ApplicationStrings.retryButton),
+                        ),
+                        TextButton(
+                          onPressed: widget.onNewPhoto,
+                          child: const Text(ApplicationStrings.newPhotoButton),
+                        ),
+                        if (_selectedBlock != null &&
+                            _selectedMeasurement != null)
+                          ElevatedButton(
+                            onPressed: () {
+                              widget
+                                  .onMeasurementSelected(_selectedMeasurement!);
+                            },
+                            child: const Text(
+                                ApplicationStrings.acceptMeasurementButton),
+                          ),
+                      ],
+                    ),
+                  ),
+                ),
               ],
             ),
           ),
