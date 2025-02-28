@@ -223,13 +223,17 @@ class _ComparisonItemState extends State<ComparisonItem> {
           uiSettings: [
             AndroidUiSettings(
               toolbarTitle: ApplicationStrings.cropImageTitle,
-              toolbarColor: Theme.of(context).primaryColor,
-              toolbarWidgetColor: Theme.of(context).colorScheme.onPrimary,
+              toolbarColor: Theme.of(context).colorScheme.surface,
+              toolbarWidgetColor: Theme.of(context).colorScheme.onSurface,
+              activeControlsWidgetColor: Theme.of(context).colorScheme.primary,
               initAspectRatio: CropAspectRatioPreset.original,
               lockAspectRatio: false,
+              statusBarColor: Theme.of(context).colorScheme.surface,
             ),
             IOSUiSettings(
               title: ApplicationStrings.cropImageTitle,
+              doneButtonTitle: ApplicationStrings.cropImageDoneButton,
+              cancelButtonTitle: ApplicationStrings.cropImageCancelButton,
             ),
           ],
         );

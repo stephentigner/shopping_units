@@ -27,6 +27,8 @@ class ApplicationStrings {
   static const packageItemCountLabel = "# of Items";
   static const scanLabelTooltip = "Scan package label for unit measurements";
   static const cropImageTitle = "Crop Image";
+  static const cropImageDoneButton = "Done";
+  static const cropImageCancelButton = "Cancel";
   static const noMeasurementsFoundError =
       "No unit measurements found in the image";
   static const scanningErrorMessage = "Error scanning label";
