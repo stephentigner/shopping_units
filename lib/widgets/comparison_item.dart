@@ -257,8 +257,48 @@ class _ComparisonItemState extends State<ComparisonItem> {
                     Navigator.pop(context, measurement);
                   },
                   onRetry: () async {
-                    Navigator.pop(context);
-                    await _scanLabel();
+                    final BuildContext currentContext = context;
+                    Navigator.pop(currentContext);
+                    // Reprocess the same cropped image
+                    final newResult = await UnitRecognition.recognizeUnits(
+                        File(croppedFile.path));
+
+                    if (!currentContext.mounted) return;
+
+                    if (newResult.measurement != null) {
+                      final result = await Navigator.push<UnitMeasurement>(
+                        currentContext,
+                        MaterialPageRoute(
+                          builder: (context) => TextRecognitionView(
+                            imageFile: File(croppedFile.path),
+                            recognitionResult: newResult,
+                            onMeasurementSelected: (measurement) {
+                              Navigator.pop(context, measurement);
+                            },
+                            onRetry: () async {
+                              Navigator.pop(context);
+                              await _scanLabel();
+                            },
+                            onNewPhoto: () {
+                              Navigator.pop(context);
+                              _scanLabel();
+                            },
+                          ),
+                        ),
+                      );
+                      if (result != null && currentContext.mounted) {
+                        Navigator.pop(currentContext, result);
+                      }
+                    } else {
+                      if (currentContext.mounted) {
+                        ScaffoldMessenger.of(currentContext).showSnackBar(
+                          const SnackBar(
+                            content: Text(
+                                ApplicationStrings.noMeasurementsFoundError),
+                          ),
+                        );
+                      }
+                    }
                   },
                   onNewPhoto: () {
                     Navigator.pop(context);
