@@ -20,6 +20,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:shopping_units/enums/comparison_item_field.dart';
@@ -194,7 +195,7 @@ class _ComparisonItemState extends State<ComparisonItem> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Camera permission is required to scan labels'),
+            content: Text(ApplicationStrings.cameraDeniedMessage),
           ),
         );
       }
@@ -209,30 +210,57 @@ class _ComparisonItemState extends State<ComparisonItem> {
       );
 
       if (image != null && mounted) {
-        final measurement =
-            await UnitRecognition.recognizeUnits(File(image.path));
+        // Crop the image
+        final croppedFile = await ImageCropper().cropImage(
+          sourcePath: image.path,
+          aspectRatioPresets: [
+            CropAspectRatioPreset.square,
+            CropAspectRatioPreset.ratio3x2,
+            CropAspectRatioPreset.original,
+            CropAspectRatioPreset.ratio4x3,
+            CropAspectRatioPreset.ratio16x9
+          ],
+          uiSettings: [
+            AndroidUiSettings(
+              toolbarTitle: ApplicationStrings.cropImageTitle,
+              toolbarColor: Theme.of(context).primaryColor,
+              toolbarWidgetColor: Theme.of(context).colorScheme.onPrimary,
+              initAspectRatio: CropAspectRatioPreset.original,
+              lockAspectRatio: false,
+            ),
+            IOSUiSettings(
+              title: ApplicationStrings.cropImageTitle,
+            ),
+          ],
+        );
 
-        if (measurement != null) {
-          // Update global fluid/solid state if needed
-          if (_details.isFluidMeasure != measurement.unit.isFluidMeasure) {
-            widget.onMeasureTypeChanged?.call(measurement.unit.isFluidMeasure);
-          }
+        if (croppedFile != null && mounted) {
+          final measurement =
+              await UnitRecognition.recognizeUnits(File(croppedFile.path));
 
-          setState(() {
-            // Update the amount and units
-            _details.packageUnitsAmount = measurement.value;
-            _details.packageUnits = measurement.unit;
+          if (measurement != null) {
+            // Update global fluid/solid state if needed
+            if (_details.isFluidMeasure != measurement.unit.isFluidMeasure) {
+              widget.onMeasureTypeChanged
+                  ?.call(measurement.unit.isFluidMeasure);
+            }
 
-            // Update the text controller to reflect the new value
-            _packageUnitsAmountController.text = measurement.value.toString();
-          });
-        } else {
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('No unit measurements found in the image'),
-              ),
-            );
+            setState(() {
+              // Update the amount and units
+              _details.packageUnitsAmount = measurement.value;
+              _details.packageUnits = measurement.unit;
+
+              // Update the text controller to reflect the new value
+              _packageUnitsAmountController.text = measurement.value.toString();
+            });
+          } else {
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text(ApplicationStrings.noMeasurementsFoundError),
+                ),
+              );
+            }
           }
         }
       }
@@ -240,7 +268,7 @@ class _ComparisonItemState extends State<ComparisonItem> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Error scanning label'),
+            content: Text(ApplicationStrings.scanningErrorMessage),
           ),
         );
       }

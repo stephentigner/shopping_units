@@ -26,6 +26,12 @@ class ApplicationStrings {
   static const multiPackLabel = "Multi-pack";
   static const packageItemCountLabel = "# of Items";
   static const scanLabelTooltip = "Scan package label for unit measurements";
+  static const cropImageTitle = "Crop Image";
+  static const noMeasurementsFoundError =
+      "No unit measurements found in the image";
+  static const scanningErrorMessage = "Error scanning label";
+  static const cameraDeniedMessage =
+      "Camera permission is required to scan labels";
 
   static const standardizedUnitsLabel = "Compare all items using";
 
