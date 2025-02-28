@@ -27,7 +27,7 @@ class TextRecognitionView extends StatefulWidget {
 
 class _TextRecognitionViewState extends State<TextRecognitionView> {
   TextBlock? _selectedBlock;
-  GlobalKey _imageKey = GlobalKey();
+  final GlobalKey _imageKey = GlobalKey();
   Size? _imageSize;
 
   @override
@@ -40,7 +40,7 @@ class _TextRecognitionViewState extends State<TextRecognitionView> {
 
     // Load image to get its size
     Image image = Image.file(widget.imageFile);
-    image.image.resolve(ImageConfiguration()).addListener(
+    image.image.resolve(const ImageConfiguration()).addListener(
       ImageStreamListener((ImageInfo info, bool _) {
         setState(() {
           _imageSize = Size(
@@ -111,6 +111,29 @@ class _TextRecognitionViewState extends State<TextRecognitionView> {
               ],
             ),
           ),
+          // Measurement preview
+          if (_selectedBlock != null &&
+              widget.recognitionResult.measurement != null)
+            Container(
+              padding: const EdgeInsets.all(16.0),
+              color: Theme.of(context).colorScheme.surfaceContainerHighest,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    ApplicationStrings.detectedMeasurementLabel,
+                    style: Theme.of(context).textTheme.bodyLarge,
+                  ),
+                  Text(
+                    '${widget.recognitionResult.measurement!.value} ${widget.recognitionResult.measurement!.unit.abbreviation}',
+                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
+                  ),
+                ],
+              ),
+            ),
           // Bottom buttons
           Padding(
             padding: const EdgeInsets.all(16.0),

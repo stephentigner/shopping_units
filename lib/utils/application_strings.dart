@@ -25,6 +25,16 @@ class ApplicationStrings {
   static const packageUnitsAmountLabel = "Amount";
   static const multiPackLabel = "Multi-pack";
   static const packageItemCountLabel = "# of Items";
+
+  static const standardizedUnitsLabel = "Compare all items using";
+
+  static const deletedItemLabel = "Item deleted";
+  static const restoreItemLabel = "Undo";
+
+  static const currencySymbol = "\$";
+  static const unitPriceLabel = "Unit Price";
+
+  // Scan and crop image
   static const scanLabelTooltip = "Scan package label for unit measurements";
   static const cropImageTitle = "Crop Image";
   static const cropImageDoneButton = "Done";
@@ -40,14 +50,7 @@ class ApplicationStrings {
   static const acceptMeasurementButton = "Use This Measurement";
   static const retryButton = "Try Again";
   static const newPhotoButton = "Take New Photo";
-
-  static const standardizedUnitsLabel = "Compare all items using";
-
-  static const deletedItemLabel = "Item deleted";
-  static const restoreItemLabel = "Undo";
-
-  static const currencySymbol = "\$";
-  static const unitPriceLabel = "Unit Price";
+  static const detectedMeasurementLabel = "Detected measurement: ";
 
   //Menu links
   static const privacyPolicyLink =
