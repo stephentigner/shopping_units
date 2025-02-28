@@ -35,6 +35,12 @@ class ApplicationStrings {
   static const cameraDeniedMessage =
       "Camera permission is required to scan labels";
 
+  // Text Recognition UI
+  static const selectMeasurementTitle = "Select Measurement";
+  static const acceptMeasurementButton = "Use This Measurement";
+  static const retryButton = "Try Again";
+  static const newPhotoButton = "Take New Photo";
+
   static const standardizedUnitsLabel = "Compare all items using";
 
   static const deletedItemLabel = "Item deleted";

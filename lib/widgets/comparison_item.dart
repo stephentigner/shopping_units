@@ -28,6 +28,7 @@ import 'package:shopping_units/enums/unit_type.dart';
 import 'package:shopping_units/models/item_details.dart';
 import 'package:shopping_units/utils/application_strings.dart';
 import 'package:shopping_units/utils/unit_recognition.dart';
+import 'package:shopping_units/views/text_recognition_view.dart';
 
 class ComparisonItem extends StatefulWidget {
   final ItemDetails details = ItemDetails();
@@ -239,24 +240,49 @@ class _ComparisonItemState extends State<ComparisonItem> {
         );
 
         if (croppedFile != null && mounted) {
-          final measurement =
+          final recognitionResult =
               await UnitRecognition.recognizeUnits(File(croppedFile.path));
 
-          if (measurement != null) {
-            // Update global fluid/solid state if needed
-            if (_details.isFluidMeasure != measurement.unit.isFluidMeasure) {
-              widget.onMeasureTypeChanged
-                  ?.call(measurement.unit.isFluidMeasure);
+          if (recognitionResult.measurement != null) {
+            // Show the text recognition view
+            if (!mounted) return;
+
+            final result = await Navigator.push<UnitMeasurement>(
+              context,
+              MaterialPageRoute(
+                builder: (context) => TextRecognitionView(
+                  imageFile: File(croppedFile.path),
+                  recognitionResult: recognitionResult,
+                  onMeasurementSelected: (measurement) {
+                    Navigator.pop(context, measurement);
+                  },
+                  onRetry: () async {
+                    Navigator.pop(context);
+                    await _scanLabel();
+                  },
+                  onNewPhoto: () {
+                    Navigator.pop(context);
+                    _scanLabel();
+                  },
+                ),
+              ),
+            );
+
+            if (result != null && mounted) {
+              // Update global fluid/solid state if needed
+              if (_details.isFluidMeasure != result.unit.isFluidMeasure) {
+                widget.onMeasureTypeChanged?.call(result.unit.isFluidMeasure);
+              }
+
+              setState(() {
+                // Update the amount and units
+                _details.packageUnitsAmount = result.value;
+                _details.packageUnits = result.unit;
+
+                // Update the text controller to reflect the new value
+                _packageUnitsAmountController.text = result.value.toString();
+              });
             }
-
-            setState(() {
-              // Update the amount and units
-              _details.packageUnitsAmount = measurement.value;
-              _details.packageUnits = measurement.unit;
-
-              // Update the text controller to reflect the new value
-              _packageUnitsAmountController.text = measurement.value.toString();
-            });
           } else {
             if (mounted) {
               ScaffoldMessenger.of(context).showSnackBar(

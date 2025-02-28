@@ -7,8 +7,16 @@ import 'package:shopping_units/enums/unit_type.dart';
 class UnitMeasurement {
   final double value;
   final UnitType unit;
+  final TextBlock? textBlock; // The text block containing the measurement
 
-  UnitMeasurement(this.value, this.unit);
+  UnitMeasurement(this.value, this.unit, [this.textBlock]);
+}
+
+class RecognitionResult {
+  final List<TextBlock> allBlocks;
+  final UnitMeasurement? measurement;
+
+  RecognitionResult(this.allBlocks, this.measurement);
 }
 
 class UnitRecognition {
@@ -47,22 +55,28 @@ class UnitRecognition {
   // Simple number pattern that matches integers and decimals
   static final _numberPattern = RegExp(r'(\d+\.?\d*)');
 
-  /// Processes an image file and returns the first recognized unit measurement
+  /// Processes an image file and returns the recognized text blocks and measurement
   /// Returns null if no valid measurement is found
-  static Future<UnitMeasurement?> recognizeUnits(File imageFile) async {
+  static Future<RecognitionResult> recognizeUnits(File imageFile) async {
     try {
       final inputImage = InputImage.fromFile(imageFile);
       final recognizedText = await _textRecognizer.processImage(inputImage);
 
+      UnitMeasurement? foundMeasurement;
+
       // Process each block of text
       for (TextBlock block in recognizedText.blocks) {
         for (TextLine line in block.lines) {
-          final measurement = _extractMeasurement(line.text);
+          final measurement = _extractMeasurement(line.text, block);
           if (measurement != null) {
-            return measurement;
+            foundMeasurement = measurement;
+            break;
           }
         }
+        if (foundMeasurement != null) break;
       }
+
+      return RecognitionResult(recognizedText.blocks, foundMeasurement);
     } catch (e) {
       developer.log(
         'Error during text recognition',
@@ -70,13 +84,13 @@ class UnitRecognition {
         name: 'UnitRecognition',
         level: 1000, // Equivalent to severe/error level
       );
+      return RecognitionResult([], null);
     }
-    return null;
   }
 
   /// Extracts the first valid measurement from a text string
   /// Returns null if no valid measurement is found
-  static UnitMeasurement? _extractMeasurement(String text) {
+  static UnitMeasurement? _extractMeasurement(String text, TextBlock block) {
     // Add debug logging to see what we're processing
     developer.log(
       'Processing text for measurement',
@@ -103,7 +117,7 @@ class UnitRecognition {
               name: 'UnitRecognition',
               error: 'Value: $value, Unit: ${entry.value.abbreviation}',
             );
-            return UnitMeasurement(value, entry.value);
+            return UnitMeasurement(value, entry.value, block);
           }
         }
       }
