@@ -16,25 +16,33 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:image_cropper/image_cropper.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:shopping_units/enums/comparison_item_field.dart';
 import 'package:shopping_units/enums/unit_type.dart';
 import 'package:shopping_units/models/item_details.dart';
 import 'package:shopping_units/utils/application_strings.dart';
+import 'package:shopping_units/utils/unit_recognition.dart';
+import 'package:shopping_units/views/text_recognition_view.dart';
 
 class ComparisonItem extends StatefulWidget {
   final ItemDetails details = ItemDetails();
   final int deletionNoticeTimeoutInSeconds;
   final void Function(ItemDetails)? onItemMarkedDeleted;
   final void Function(ItemDetails)? onDeleteItem;
+  final void Function(bool)? onMeasureTypeChanged;
 
   ComparisonItem({
     Key? key,
     required this.deletionNoticeTimeoutInSeconds,
     this.onItemMarkedDeleted,
     this.onDeleteItem,
+    this.onMeasureTypeChanged,
   }) : super(key: key);
 
   @override
@@ -181,6 +189,118 @@ class _ComparisonItemState extends State<ComparisonItem> {
     });
   }
 
+  Future<void> _scanLabel() async {
+    // Request camera permission
+    final status = await Permission.camera.request();
+    if (!status.isGranted) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(ApplicationStrings.cameraDeniedMessage),
+          ),
+        );
+      }
+      return;
+    }
+
+    try {
+      final ImagePicker picker = ImagePicker();
+      final XFile? image = await picker.pickImage(
+        source: ImageSource.camera,
+        preferredCameraDevice: CameraDevice.rear,
+      );
+
+      if (image != null && mounted) {
+        // Crop the image
+        final croppedFile = await ImageCropper().cropImage(
+          sourcePath: image.path,
+          aspectRatioPresets: [
+            CropAspectRatioPreset.square,
+            CropAspectRatioPreset.ratio3x2,
+            CropAspectRatioPreset.original,
+            CropAspectRatioPreset.ratio4x3,
+            CropAspectRatioPreset.ratio16x9
+          ],
+          uiSettings: [
+            AndroidUiSettings(
+              toolbarTitle: ApplicationStrings.cropImageTitle,
+              toolbarColor: Theme.of(context).colorScheme.surface,
+              toolbarWidgetColor: Theme.of(context).colorScheme.onSurface,
+              activeControlsWidgetColor: Theme.of(context).colorScheme.primary,
+              initAspectRatio: CropAspectRatioPreset.original,
+              lockAspectRatio: false,
+              statusBarColor: Theme.of(context).colorScheme.surface,
+            ),
+            IOSUiSettings(
+              title: ApplicationStrings.cropImageTitle,
+              doneButtonTitle: ApplicationStrings.cropImageDoneButton,
+              cancelButtonTitle: ApplicationStrings.cropImageCancelButton,
+            ),
+          ],
+        );
+
+        if (croppedFile != null && mounted) {
+          final recognitionResult =
+              await UnitRecognition.recognizeUnits(File(croppedFile.path));
+
+          if (recognitionResult.measurement != null) {
+            // Show the text recognition view
+            if (!mounted) return;
+
+            final result = await Navigator.push<UnitMeasurement>(
+              context,
+              MaterialPageRoute(
+                builder: (context) => TextRecognitionView(
+                  imageFile: File(croppedFile.path),
+                  recognitionResult: recognitionResult,
+                  onMeasurementSelected: (measurement) {
+                    Navigator.pop(context, measurement);
+                  },
+                  onNewPhoto: () {
+                    Navigator.pop(context);
+                    _scanLabel();
+                  },
+                ),
+              ),
+            );
+
+            if (result != null && mounted) {
+              // Update global fluid/solid state if needed
+              if (_details.isFluidMeasure != result.unit.isFluidMeasure) {
+                widget.onMeasureTypeChanged?.call(result.unit.isFluidMeasure);
+              }
+
+              setState(() {
+                // Update the amount and units
+                _details.packageUnitsAmount = result.value;
+                _details.packageUnits = result.unit;
+
+                // Update the text controller to reflect the new value
+                _packageUnitsAmountController.text = result.value.toString();
+              });
+            }
+          } else {
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text(ApplicationStrings.noMeasurementsFoundError),
+                ),
+              );
+            }
+          }
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(ApplicationStrings.scanningErrorMessage),
+          ),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_details.isDeleted) {
@@ -230,8 +350,14 @@ class _ComparisonItemState extends State<ComparisonItem> {
                 ),
               ),
               IconButton(
-                  onPressed: () => _deleteItem(),
-                  icon: const Icon(Icons.delete))
+                onPressed: _scanLabel,
+                icon: const Icon(Icons.document_scanner),
+                tooltip: ApplicationStrings.scanLabelTooltip,
+              ),
+              IconButton(
+                onPressed: () => _deleteItem(),
+                icon: const Icon(Icons.delete),
+              ),
             ],
           ),
           Row(children: [
