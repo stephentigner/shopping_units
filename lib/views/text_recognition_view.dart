@@ -11,12 +11,12 @@ class TextRecognitionView extends StatefulWidget {
   final VoidCallback onNewPhoto;
 
   const TextRecognitionView({
-    Key? key,
+    super.key,
     required this.imageFile,
     required this.recognitionResult,
     required this.onMeasurementSelected,
     required this.onNewPhoto,
-  }) : super(key: key);
+  });
 
   @override
   State<TextRecognitionView> createState() => _TextRecognitionViewState();
@@ -115,7 +115,7 @@ class _TextRecognitionViewState extends State<TextRecognitionView> {
                         ),
                       ),
                     );
-                  }).toList(),
+                  }),
               ],
             ),
           ),

@@ -38,12 +38,12 @@ class ComparisonItem extends StatefulWidget {
   final void Function(bool)? onMeasureTypeChanged;
 
   ComparisonItem({
-    Key? key,
+    super.key,
     required this.deletionNoticeTimeoutInSeconds,
     this.onItemMarkedDeleted,
     this.onDeleteItem,
     this.onMeasureTypeChanged,
-  }) : super(key: key);
+  });
 
   @override
   State<ComparisonItem> createState() => _ComparisonItemState();
@@ -214,13 +214,6 @@ class _ComparisonItemState extends State<ComparisonItem> {
         // Crop the image
         final croppedFile = await ImageCropper().cropImage(
           sourcePath: image.path,
-          aspectRatioPresets: [
-            CropAspectRatioPreset.square,
-            CropAspectRatioPreset.ratio3x2,
-            CropAspectRatioPreset.original,
-            CropAspectRatioPreset.ratio4x3,
-            CropAspectRatioPreset.ratio16x9
-          ],
           uiSettings: [
             AndroidUiSettings(
               toolbarTitle: ApplicationStrings.cropImageTitle,
@@ -230,11 +223,25 @@ class _ComparisonItemState extends State<ComparisonItem> {
               initAspectRatio: CropAspectRatioPreset.original,
               lockAspectRatio: false,
               statusBarColor: Theme.of(context).colorScheme.surface,
+              aspectRatioPresets: [
+                CropAspectRatioPreset.square,
+                CropAspectRatioPreset.ratio3x2,
+                CropAspectRatioPreset.original,
+                CropAspectRatioPreset.ratio4x3,
+                CropAspectRatioPreset.ratio16x9
+              ],
             ),
             IOSUiSettings(
               title: ApplicationStrings.cropImageTitle,
               doneButtonTitle: ApplicationStrings.cropImageDoneButton,
               cancelButtonTitle: ApplicationStrings.cropImageCancelButton,
+              aspectRatioPresets: [
+                CropAspectRatioPreset.square,
+                CropAspectRatioPreset.ratio3x2,
+                CropAspectRatioPreset.original,
+                CropAspectRatioPreset.ratio4x3,
+                CropAspectRatioPreset.ratio16x9
+              ],
             ),
           ],
         );
