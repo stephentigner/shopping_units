@@ -8,7 +8,6 @@ class TextRecognitionView extends StatefulWidget {
   final File imageFile;
   final RecognitionResult recognitionResult;
   final Function(UnitMeasurement) onMeasurementSelected;
-  final VoidCallback onRetry;
   final VoidCallback onNewPhoto;
 
   const TextRecognitionView({
@@ -16,7 +15,6 @@ class TextRecognitionView extends StatefulWidget {
     required this.imageFile,
     required this.recognitionResult,
     required this.onMeasurementSelected,
-    required this.onRetry,
     required this.onNewPhoto,
   }) : super(key: key);
 
@@ -187,7 +185,35 @@ class _TextRecognitionViewState extends State<TextRecognitionView> {
                       runSpacing: 8.0,
                       children: [
                         TextButton(
-                          onPressed: widget.onRetry,
+                          onPressed: () async {
+                            final BuildContext currentContext = context;
+                            // Reprocess the same image
+                            final newResult =
+                                await UnitRecognition.recognizeUnits(
+                                    widget.imageFile);
+
+                            if (!currentContext.mounted) return;
+
+                            if (newResult.measurement != null ||
+                                newResult.allBlocks.isNotEmpty) {
+                              setState(() {
+                                // Reset selection and update with new results
+                                _selectedBlock =
+                                    newResult.measurement?.textBlock;
+                                _selectedMeasurement = newResult.measurement;
+                                widget.recognitionResult.allBlocks.clear();
+                                widget.recognitionResult.allBlocks
+                                    .addAll(newResult.allBlocks);
+                              });
+                            } else {
+                              ScaffoldMessenger.of(currentContext).showSnackBar(
+                                const SnackBar(
+                                  content: Text(ApplicationStrings
+                                      .noMeasurementsFoundError),
+                                ),
+                              );
+                            }
+                          },
                           child: const Text(ApplicationStrings.retryButton),
                         ),
                         TextButton(
