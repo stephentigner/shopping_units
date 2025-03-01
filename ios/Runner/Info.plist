@@ -4,10 +4,6 @@
 <dict>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
-	<key>NSCameraUsageDescription</key>
-	<string>Camera access is needed to scan product labels for unit measurements</string>
-	<key>NSMicrophoneUsageDescription</key>
-	<string>Microphone access may be needed by the camera system</string>
 	<key>CFBundleDisplayName</key>
 	<string>Shopping Units</string>
 	<key>CFBundleExecutable</key>
