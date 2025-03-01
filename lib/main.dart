@@ -69,9 +69,6 @@ class _MainScreenState extends State<MainScreen> {
       deletionNoticeTimeoutInSeconds: _deletionNoticeTimeoutInSeconds,
       comparisonListModel: _comparisonListModel,
     );
-    _comparisonListModel.onMeasureTypeChanged = (isFluid) {
-      _toggleMeasureType(isFluid ? 1 : 0);
-    };
     super.initState();
   }
 

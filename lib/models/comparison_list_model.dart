@@ -30,7 +30,6 @@ class ComparisonListModel with ChangeNotifier {
   List<ComparisonItem> get values => _comparisonItems.values.toList();
 
   void Function()? addComparisonItemCallback;
-  void Function(bool)? onMeasureTypeChanged;
 
   void addComparisonItem(
       int deletionNoticeTimeoutInSeconds,
@@ -41,7 +40,7 @@ class ComparisonListModel with ChangeNotifier {
       deletionNoticeTimeoutInSeconds: deletionNoticeTimeoutInSeconds,
       onItemMarkedDeleted: onItemMarkedDeleted,
       onDeleteItem: onDeleteItem,
-      onMeasureTypeChanged: onMeasureTypeChanged,
+      // onRestoreItem: _restoreItem,
     );
     _comparisonItems[item.details.key] = item;
 
