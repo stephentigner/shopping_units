@@ -34,6 +34,26 @@ class ApplicationStrings {
   static const currencySymbol = "\$";
   static const unitPriceLabel = "Unit Price";
 
+  // Scan and crop image
+  static const scanLabelTooltip = "Scan package label for unit measurements";
+  static const cropImageTitle = "Crop Image";
+  static const cropImageDoneButton = "Done";
+  static const cropImageCancelButton = "Cancel";
+  static const noMeasurementsFoundError =
+      "No unit measurements found in the image";
+  static const scanningErrorMessage = "Error scanning label";
+  static const cameraDeniedMessage =
+      "Camera permission is required to scan labels";
+
+  // Text Recognition UI
+  static const selectMeasurementTitle = "Select Measurement";
+  static const acceptMeasurementButton = "Use This Measurement";
+  static const retryButton = "Try Again";
+  static const newPhotoButton = "Take New Photo";
+  static const detectedMeasurementLabel = "Detected measurement: ";
+  static const noMeasurementsInSelectionMessage =
+      "No measurements found in selected text";
+
   //Menu links
   static const privacyPolicyLink =
       "https://github.com/stephentigner/public_docs/blob/main/simple_mobile_app_privacy_policy.md";
