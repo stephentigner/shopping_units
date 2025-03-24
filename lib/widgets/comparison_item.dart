@@ -421,22 +421,6 @@ class _ComparisonItemState extends State<ComparisonItem> {
                 ),
               ),
             ),
-            if (_details.isMultiPack)
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: TextField(
-                    keyboardType: TextInputType.number,
-                    controller: _packageItemCountController,
-                    decoration: const InputDecoration(
-                      labelText: ApplicationStrings.packageItemCountLabel,
-                    ),
-                    inputFormatters: [_integerFormatter],
-                    onChanged: (value) => _changeTextField(
-                        ComparisonItemField.packageItemCount, value),
-                  ),
-                ),
-              ),
             Expanded(
               child: Padding(
                   padding: const EdgeInsets.all(8.0),
@@ -459,6 +443,22 @@ class _ComparisonItemState extends State<ComparisonItem> {
                     ),
                   )),
             ),
+            if (_details.isMultiPack)
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: TextField(
+                    keyboardType: TextInputType.number,
+                    controller: _packageItemCountController,
+                    decoration: const InputDecoration(
+                      labelText: ApplicationStrings.packageItemCountLabel,
+                    ),
+                    inputFormatters: [_integerFormatter],
+                    onChanged: (value) => _changeTextField(
+                        ComparisonItemField.packageItemCount, value),
+                  ),
+                ),
+              ),
           ]),
           if (_details.standardizedPrice > 0)
             Row(
