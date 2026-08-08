@@ -77,14 +77,18 @@ class ItemDetails with ChangeNotifier {
       convertedAmount = packageUnitsAmount;
     }
 
-    if (packagePrice != null &&
-        packagePrice! > 0 &&
-        convertedAmount != null &&
-        convertedAmount > 0) {
-      // For multi-packs, first get the price per individual item
-      double pricePerItem =
-          isMultiPack ? packagePrice! / packageItemCount : packagePrice!;
+    if (pricePerItem > 0 && convertedAmount != null && convertedAmount > 0) {
+      //price per item will be the same as the package price if not in a multi-pack
       return pricePerItem / convertedAmount;
+    } else {
+      return 0;
+    }
+  }
+
+  double get pricePerItem {
+    if (packagePrice != null && packagePrice! > 0) {
+      // For multi-packs, compute the price per individual item
+      return isMultiPack ? packagePrice! / packageItemCount : packagePrice!;
     } else {
       return 0;
     }
@@ -117,6 +121,10 @@ class ItemDetails with ChangeNotifier {
 
   String get standardizedPriceDisplay => standardizedPrice > 0
       ? "${ApplicationStrings.currencySymbol}${standardizedPrice.toStringAsFixed(2)}/${standardizedUnits.abbreviation}"
+      : "";
+
+  String get pricePerItemDisplay => pricePerItem > 0
+      ? "${ApplicationStrings.currencySymbol}${pricePerItem.toStringAsFixed(2)}"
       : "";
 
   String get deletedItemLabel =>
