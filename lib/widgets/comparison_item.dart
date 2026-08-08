@@ -350,6 +350,24 @@ class _ComparisonItemState extends State<ComparisonItem> {
                         ),
                       )),
                 ),
+                if (_details.isMultiPack)
+                  Expanded(
+                      child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: ListenableBuilder(
+                      listenable: _details,
+                      builder: (context, child) => Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(ApplicationStrings.pricePerItemLabel),
+                          Text(
+                            _details.pricePerItemDisplay,
+                            textScaler: const TextScaler.linear(1.5),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ))
               ],
             ),
         ],

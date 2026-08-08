@@ -33,6 +33,7 @@ class ApplicationStrings {
 
   static const currencySymbol = "\$";
   static const unitPriceLabel = "Unit Price";
+  static const pricePerItemLabel = "Price per Item";
 
   //Menu links
   static const privacyPolicyLink =
